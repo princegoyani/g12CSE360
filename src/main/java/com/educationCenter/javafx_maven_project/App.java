@@ -21,42 +21,45 @@ public class App {
     		
     		databaseHelper.connectToDatabase(); // connecting to database
     		
-    		if (databaseHelper.isDatabaseEmpty()) {
-				System.out.println( "In-Memory Database  is empty" );
-				//set up administrator access
-				if (setupAdministrator()) {
-					adminLogin();
-				}else { 
-					System.out.println("Try Again !");
-				}
-			}
-    		else {
-				System.out.println( "1.Admin 2.Instrutor 3.Student 4.Parents" );
-				String role = scanner.nextLine();
-
-				switch (role) {
-				case "Admin":
-					System.out.println(adminLogin());
-					if (datas[4] == null) {
-						adminSetupLogin();
-					}
-					break;
-				case "Instrutor":
-					userFlow();
-					break;
-				case "Student":
-					userFlow();
-					break;
-				case "Parents":
-					userFlow();
-					break;
-				
-				default:
-					System.out.println("Invalid choice. Please select 'a', 'u'");
-					databaseHelper.closeConnection();
-				}
-			}
+    		while (true){
     		
+	    		if (databaseHelper.isDatabaseEmpty()) {
+					System.out.println( "In-Memory Database  is empty" );
+					//set up administrator access
+					if (setupAdministrator()) {
+						adminLogin();
+					}else { 
+						System.out.println("Try Again !");
+					}
+				}
+	    		else {
+					System.out.println( "1.Admin 2.Instrutor 3.Student 4.Parents" );
+					String role = scanner.nextLine();
+	
+					switch (role) {
+					case "Admin":
+						System.out.println(adminLogin());
+						System.out.println(datas[4]);
+						if (datas[4] == null && adminSetupLogin()) {
+							adminHome();
+						}
+						break;
+					case "Instrutor":
+						userFlow();
+						break;
+					case "Student":
+						userFlow();
+						break;
+					case "Parents":
+						userFlow();
+						break;
+					
+					default:
+						System.out.println("Invalid choice. Please select 'a', 'u'");
+						databaseHelper.closeConnection();
+					}
+				}}
+	    		
     	}catch (SQLException e) {
     		System.out.println(e.getMessage());
     	}
@@ -64,6 +67,25 @@ public class App {
     	
     }
     
+	public static void adminHome() throws SQLException{
+		System.out.println("1.logout");
+		String command = scanner.nextLine();
+		switch (command) {
+		case "logout": {
+			logout();
+		}
+		default:
+			throw new IllegalArgumentException("Unexpected value: " + command);
+		}
+		
+	}
+	
+	public static void logout(){
+		username=null;
+		password=null;
+		datas=null;
+		
+		}
     
 	 public static boolean setupAdministrator() throws SQLException {
 	    int trials = 3;
@@ -149,8 +171,7 @@ public class App {
 			return false;
 		}
 		
-		private static void adminSetupLogin() throws SQLException {
-			System.out.println("admin flow");
+		private static boolean adminSetupLogin() throws SQLException {
 			
 			// name input
 			System.out.print("Enter Admin Frist Name: ");
@@ -158,7 +179,7 @@ public class App {
 			System.out.print("Enter Admin Middle Name: ");
 			String middleName = scanner.nextLine();
 			System.out.print("Enter Admin Last Name: ");
-			String lastNameString = scanner.nextLine();
+			String lastName = scanner.nextLine();
 			
 			// email input
 			System.out.print("Enter Admin Email: ");
@@ -168,9 +189,13 @@ public class App {
 			if (verifyEmail(email) && datas != null) {
 				System.out.println("Admin login successful.");
 				databaseHelper.displayUsersByAdmin();
-				
+				String[] adminData = {email,fristName,middleName,lastName};
+				if (databaseHelper.updateAdminUser(username,password,adminData)){
+					return true
+				};
 			} else {
 				System.out.println("Invalid admin credentials. Try again!!");
+				return false;
 			}
 		}
 		

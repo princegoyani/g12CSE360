@@ -153,7 +153,29 @@ public class DatabaseHelper {
 			System.out.println(", Last: " + role); 
 		} 
 	}
+	// note: updating roles
+	public boolean updateAdminUser(String username,String password,String[] adminData) throws SQLException {
+		String sql = "UPDATE cse360users SET email = ?, firstName = ?, middleName = ?, lastName = ? WHERE username = ? AND password = ?";
+        
+        // Set values for the placeholders
+		try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+			ResultSet rs = pstmt.executeQuery();
+	        pstmt.setString(1, adminData[0]);  // New password
+	        pstmt.setString(2, adminData[1]);   // New role
+	        pstmt.setString(3, adminData[2]);
+	        pstmt.setString(4, adminData[3]);
+	        pstmt.setString(5, username);
+	        pstmt.setString(6, password);
+	        
+	        //add check data statement
+	        
+	        return true;
+		}
+		
+        // Execute the update statement
 
+	}
+	
 
 	public void closeConnection() {
 		try{ 
