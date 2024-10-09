@@ -33,17 +33,22 @@ public class App {
 					}
 				}
 	    		else {
-					System.out.println( "1.Admin 2.Instrutor 3.Student 4.Parents" );
+					System.out.println( "1.Admin 2.Instrutor 3.Student 4.Parents 5.Forget Password" );
 					String role = scanner.nextLine();
 	
 					switch (role) {
 					case "Admin":
-						System.out.println(adminLogin());
-						if (adminLogin
-						System.out.println(datas[4]);
-						if (datas[4] == null && adminSetupLogin()) {
-							adminHome();
+						
+						if (!adminLogin()){
+							System.out.println("Invalid Login!");
+							continue;
 						}
+						
+						if (datas[4] == null) {
+							adminSetupLogin()
+						}
+
+						adminHome();
 						break;
 					case "Instrutor":
 						userFlow();
@@ -54,7 +59,9 @@ public class App {
 					case "Parents":
 						userFlow();
 						break;
-					
+					case "Forgot Password":
+						resetPasword();
+						break;
 					default:
 						System.out.println("Invalid choice. Please select 'a', 'u'");
 						databaseHelper.closeConnection();
@@ -81,8 +88,40 @@ public class App {
 		
 	}
 
-	public static void resetPasword(){
+	public static void resetPasword(String forgotpasswordUsername){
+		String[] collectedData = databaseHelper.doesUserExist(username,"admin");
+
+		if (collectedData[4] == null){
+			if (adminSetupLogin()){
+			collectedData = databaseHelper.doesUserExist();
+			}else{
+				System.out.println("Invalid Try Again!");
+			}
+		}
+
 		
+		char[] onetimeCode = generateRandomOneTimeCode();
+		if(!verifyEmail(collectedData[4]){
+			
+		}
+	    int trials = 3;
+	    String passWord = "";
+	    while (trials > 0 ) {
+			System.out.print("Enter New Admin Password: ");
+			passWord = scanner.nextLine();
+			System.out.print("Enter New Admin Re-EnterPassword: ");
+			String rePassword = scanner.nextLine();
+			
+			if (!passWord.equals(rePassword)) {
+			trials = trials - 1;  
+			System.out.printf("Password doesn't match, %d trails left!", trials );
+			continue;
+			}		
+				
+			break;
+	    		
+		databaseHelper.updatePassword(username,password,"admin");
+		password = passWord;
 	}
 	
 	public static void logout(){
