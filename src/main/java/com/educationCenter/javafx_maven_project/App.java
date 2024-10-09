@@ -2,8 +2,13 @@ package com.educationCenter.javafx_maven_project;
 import java.security.PublicKey;
 import java.sql.SQLException;
 import java.util.*;
-import edu.asu.DatabasePart1.DatabaseHelper;
 
+import org.h2.expression.function.DateTimeFormatFunction;
+import org.h2.mvstore.type.StringDataType;
+
+import edu.asu.DatabasePart1.DatabaseHelper;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Hello world!
@@ -27,7 +32,7 @@ public class App {
 					System.out.println( "In-Memory Database  is empty" );
 					//set up administrator access
 					if (setupAdministrator()) {
-						adminLogin();
+						// add if needed
 					}else { 
 						System.out.println("Try Again !");
 					}
@@ -45,7 +50,7 @@ public class App {
 						}
 						
 						if (datas[4] == null) {
-							adminSetupLogin()
+							adminSetupLogin();
 						}
 
 						adminHome();
@@ -60,7 +65,7 @@ public class App {
 						userFlow();
 						break;
 					case "Forgot Password":
-						resetPasword();
+						resetPasword(username);
 						break;
 					default:
 						System.out.println("Invalid choice. Please select 'a', 'u'");
@@ -75,15 +80,16 @@ public class App {
     	
     }
     
-	public static void adminHome(){
+	public static void adminHome() throws SQLException {
 		System.out.println("1.logout 2.generateUser");
 		String command = scanner.nextLine();
 		switch (command) {
 		case "logout": {
 			logout();
+			break;
 		}
 		case "generateUser":{
-			
+			generateUser();
 		}
 		default:
 			adminHome();
@@ -91,37 +97,45 @@ public class App {
 		
 	}
 
-	public static void generateUser(){
+	public static void generateUser() throws SQLException  {
+		String testUser ;
+		String[] user ;
+		String testRole;
 		while (true){
 		System.out.println("Enter Preferred Username : ");
-		String testUser = scanner.nextLine();
-
-		if (databaseHelper.doesUserExist()){
-			
+		testUser = scanner.nextLine();
+		user = databaseHelper.doesUserExist(testUser);
+		if (user != null){
+			System.out.println("Already Exists Username, Try Again!");
+			continue;
+		}
+		System.out.println("Enter Preferred User Role : ");
+		testRole = scanner.nextLine();
+		break;
 		}
 		
-		}
-		
-		
-		databaseHelper.generateNewUser();
-	}
+		char[] onetimeCode = generateRandomOneTimeCode();
+		String onetimeCodeString = new String(onetimeCode);
+		String expiringDateTime = LocalDateTime.now().plusDays(7).format(DateTimeFormatter.ISO_DATE_TIME);
+		String codeDetails = expiringDateTime+" "+onetimeCodeString;
 
-	public static void resetPasword(String forgotpasswordUsername){
+		databaseHelper.generateUserByAdmin(testUser,testRole,codeDetails);
+		}
+ 
+	public static void resetPasword(String forgotpasswordUsername) throws SQLException{
 		String[] collectedData = databaseHelper.doesUserExist(username);
 
 		if (collectedData[4] == null){
 			if (adminSetupLogin()){
-			collectedData = databaseHelper.doesUserExist();
+			collectedData = databaseHelper.doesUserExist(username);
 			}else{
 				System.out.println("Invalid Try Again!");
 			}
 		}
 
-		
-		char[] onetimeCode = generateRandomOneTimeCode();
-		if(!verifyEmail(collectedData[4]){
+		if(!verifyEmail(collectedData[4])){
 			
-		}
+		}else {
 	    int trials = 3;
 	    String passWord = "";
 	    while (trials > 0 ) {
@@ -137,9 +151,11 @@ public class App {
 			}		
 				
 			break;
-	    		
+		}
 		databaseHelper.updatePassword(username,password,"admin");
 		password = passWord;
+
+	}
 	}
 	
 	public static void logout(){
@@ -198,7 +214,7 @@ public class App {
 				System.out.print("Enter User Password: ");
 				password = scanner.nextLine(); 
 				// Check if user already exists in the database
-			    if (!databaseHelper.doesUserExist(email)) {
+			    if (databaseHelper.doesUserExist(email) == null) {  
 			        databaseHelper.register(email, password, "user");
 			        System.out.println("User setup completed.");
 			    } else {
@@ -253,12 +269,13 @@ public class App {
 				databaseHelper.displayUsersByAdmin();
 				String[] adminData = {email,fristName,middleName,lastName};
 				if (databaseHelper.updateAdminUser(username,password,adminData)){
-					return true
+					return true;
 				};
 			} else {
 				System.out.println("Invalid admin credentials. Try again!!");
 				return false;
 			}
+			return false;
 		}
 		
 		private static char[] generateRandomOneTimeCode() {

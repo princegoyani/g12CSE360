@@ -1,11 +1,6 @@
 package edu.asu.DatabasePart1;
 import java.sql.*;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-
 
 public class DatabaseHelper {
 
@@ -41,7 +36,7 @@ public class DatabaseHelper {
 				+ "email VARCHAR(50), "
 				+ "firstName VARCHAR(20), "
 				+ "middleName VARCHAR(20), "
-				+ "lastName VARCHAR(20),
+				+ "lastName VARCHAR(20), "
 				+ "oneTimePassword VARCHAR(100)"
 				+")";
 		statement.execute(userTable);
@@ -99,8 +94,8 @@ public class DatabaseHelper {
 		return values;
 		
 	}
-	public boolean doesUserExist(String username) {
-	    String query = "SELECT COUNT(*) FROM cse360users WHERE username = ?";
+	public String[] doesUserExist(String username) {
+	    String query = "SELECT * FROM cse360users WHERE username = ?";
 	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 	        
 	        pstmt.setString(1, username);
@@ -112,8 +107,9 @@ public class DatabaseHelper {
 	        }
 	    } catch (SQLException e) {
 	        e.printStackTrace();
+			return null;
 	    }
-	    return false; // If an error occurs, assume user doesn't exist
+	    return null; // If an error occurs, assume user doesn't exist
 	}
 
 	public void displayUsersByAdmin() throws SQLException{
@@ -161,7 +157,8 @@ public class DatabaseHelper {
         
         // Set values for the placeholders
 		try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-			ResultSet rs = pstmt.executeQuery();
+			
+			
 	        pstmt.setString(1, adminData[0]);  // New password
 	        pstmt.setString(2, adminData[1]);   // New role
 	        pstmt.setString(3, adminData[2]);
@@ -169,27 +166,36 @@ public class DatabaseHelper {
 	        pstmt.setString(5, username);
 	        pstmt.setString(6, password);
 	        
-	        //add check data statement
-	        
-	        return true;
-		}
+			int row = pstmt.executeUpdate();
+	        return row >0;
+			}
 		
         // Execute the update statement
 
 	}
-	public boolean updatePassword(String username, String password, String role){
+	public boolean updatePassword(String username, String password, String role)throws SQLException {
 		String sql = "UPDATE cse360users SET password = ? WHERE username = ? , role = ? ";
         
         // Set values for the placeholders
 		try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-			ResultSet rs = pstmt.executeQuery();
+			
 	        pstmt.setString(1, password);  // New password
 	        pstmt.setString(2, username);   // New role
 	        pstmt.setString(3, role);
 	        
 	        //add check data statement
-	        
+	        ResultSet rs = pstmt.executeQuery();
 	        return true;
+		}
+	}
+
+	public void generateUserByAdmin(String username,String role,String codeDetail) throws SQLException{
+		String sql = "INSERT INTO cse360users (username,role,oneTimePassword) VALUES (?,?,?)";
+		try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+			pstmt.setString(1, username);
+			pstmt.setString(2, role);
+			pstmt.setString(3, codeDetail);
+			pstmt.executeUpdate();
 		}
 	}
 
