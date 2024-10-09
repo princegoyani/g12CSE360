@@ -41,7 +41,9 @@ public class DatabaseHelper {
 				+ "email VARCHAR(50), "
 				+ "firstName VARCHAR(20), "
 				+ "middleName VARCHAR(20), "
-				+ "lastName VARCHAR(20))";
+				+ "lastName VARCHAR(20),
+				+ "oneTimePassword VARCHAR(100)"
+				+")";
 		statement.execute(userTable);
 	}
 
@@ -97,12 +99,11 @@ public class DatabaseHelper {
 		return values;
 		
 	}
-	public boolean doesUserExist(String username, String role) {
-	    String query = "SELECT COUNT(*) FROM cse360users WHERE username = ? AND role = ?";
+	public boolean doesUserExist(String username) {
+	    String query = "SELECT COUNT(*) FROM cse360users WHERE username = ?";
 	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 	        
 	        pstmt.setString(1, username);
-		pstmt.setString(2, role);
 	        ResultSet rs = pstmt.executeQuery();
 	        
 	        if (rs.next()) {
