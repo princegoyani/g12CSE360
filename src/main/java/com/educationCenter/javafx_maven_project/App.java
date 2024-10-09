@@ -1,14 +1,12 @@
 package com.educationCenter.javafx_maven_project;
-import java.security.PublicKey;
 import java.sql.SQLException;
-import java.util.*;
-
-import org.h2.expression.function.DateTimeFormatFunction;
-import org.h2.mvstore.type.StringDataType;
-
-import edu.asu.DatabasePart1.DatabaseHelper;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Random;
+import java.util.Scanner;
+
+import edu.asu.DatabasePart1.DatabaseHelper;
 
 /**
  * Hello world!
@@ -18,6 +16,7 @@ public class App {
 	private static final Scanner scanner = new Scanner(System.in);
 	private static String username;
 	private static String password;
+	private static String activeRole;
 	private static String[] datas; 
 
 	public static void main(String[] args) {
@@ -38,40 +37,26 @@ public class App {
 					}
 				}
 	    		else {
-					System.out.println( "1.Admin 2.Instrutor 3.Student 4.Parents 5.Forget Password" );
-					String role = scanner.nextLine();
-	
-					switch (role) {
-					case "Admin":
-						
-						if (!adminLogin()){
-							System.out.println("Invalid Login!");
-							continue;
-						}
-						
-						if (datas[4] == null) {
-							adminSetupLogin();
-						}
 
-						adminHome();
-						break;
-					case "Instrutor":
-						userFlow();
-						break;
-					case "Student":
-						userFlow();
-						break;
-					case "Parents":
-						userFlow();
-						break;
-					case "Forgot Password":
-						resetPasword(username);
-						break;
-					default:
-						System.out.println("Invalid choice. Please select 'a', 'u'");
-						databaseHelper.closeConnection();
+
+					System.out.println( "1.Login 2.ForgotPassword" );
+					String choice = scanner.nextLine();
+					
+					switch (choice) {
+						case "1":
+							appLogin();
+							
+						case "2":
+							System.out.println("Enter Username: ");
+							String forgetUsername = scanner.nextLine();
+
+							resetPasword(forgetUsername);
+
+						default:
+							continue;
 					}
-				}}
+				}
+			}
 	    		
     	}catch (SQLException e) {
     		System.out.println(e.getMessage());
@@ -162,7 +147,6 @@ public class App {
 		username=null;
 		password=null;
 		datas=null;
-		
 		}
     
 	 public static boolean setupAdministrator() throws SQLException {
@@ -189,8 +173,8 @@ public class App {
 	    if (trials == 0 ) {
 			return false;
 	    }
-	     
-		databaseHelper.register(userName, passWord, "admin");
+	    String[] roles = {"admin"};
+		databaseHelper.register(userName, passWord, roles);
 		username=  userName;
 		password = passWord;
 		
@@ -202,53 +186,53 @@ public class App {
 	 
 
 		private static void userFlow() throws SQLException {
-			String email = null;
-			String password = null;
-			System.out.println("user flow");
-			System.out.print("What would you like to do 1.Register 2.Login  ");
-			String choice = scanner.nextLine();
-			switch(choice) {
-			case "1": 
-				System.out.print("Enter User Email: ");
-				email = scanner.nextLine();
-				System.out.print("Enter User Password: ");
-				password = scanner.nextLine(); 
-				// Check if user already exists in the database
-			    if (databaseHelper.doesUserExist(email) == null) {  
-			        databaseHelper.register(email, password, "user");
-			        System.out.println("User setup completed.");
-			    } else {
-			        System.out.println("User already exists.");
-			    }
-				break;
-			case "2":
-				System.out.print("Enter User Email: ");
-				email = scanner.nextLine();
-				datas = databaseHelper.login(username, password, "user");
-				if (datas != null) {
-					System.out.println("User login successful.");
-//					databaseHelper.displayUsers();
-
-				} else {
-					System.out.println("Invalid user credentials. Try again!!");
-				}
-				break;
-			}
+			
 		}
-		private static boolean adminLogin() throws SQLException {
+
+		private static boolean appLogin() throws SQLException {
 			System.out.print("Enter Login Username: ");
 			String loginName = scanner.nextLine();
+			String oneTimeCodeInvited = databaseHelper.checkInvitedUser(loginName);
+			if (oneTimeCodeInvited != null){
+				loginInvitedUser(loginName,oneTimeCodeInvited);
+			}
+			
 			System.out.print("Enter Login Password: ");
 			String credentials = scanner.nextLine();
-			datas = databaseHelper.login(loginName, credentials, "admin");
+			datas = databaseHelper.login(loginName, credentials);
 			if (datas != null) {
 				username = loginName;
 				password = credentials;
+				checkrole();
 				return true;
 			}
 			return false;
 		}
 		
+		private static void loginInvitedUser(String user,String onetimecode) throws SQLException{
+			//date
+			String[] onetimearry = onetimecode.split(" ");
+			System.out.println(onetimearry[0] + " " + onetimearry[1]);
+			//passwordmatch
+			//createNewPassword
+			//loginagain or setup
+		}
+
+		private static void checkrole() throws SQLException{
+			String[] roles = databaseHelper.getRoleArray(username,password);
+
+			if (roles.length > 1){
+				System.out.println("Choose Roles: ");
+				for (int i = 1; i > roles.length;i++ ){
+					System.out.printf("%d %s" , i , roles[i-1]);
+				}
+				int roleChoice = scanner.nextInt();
+				activeRole = roles[roleChoice-1];
+			}else{
+				activeRole = roles[0];
+			}
+
+		}
 		private static boolean adminSetupLogin() throws SQLException {
 			
 			// name input
@@ -263,7 +247,7 @@ public class App {
 			System.out.print("Enter Admin Email: ");
 			String email = scanner.nextLine();
 			databaseHelper.displayUsersByAdmin();
-			datas = databaseHelper.login(username, password, "admin");
+			datas = databaseHelper.login(username, password);
 			if (verifyEmail(email) && datas != null) {
 				System.out.println("Admin login successful.");
 				databaseHelper.displayUsersByAdmin();
@@ -293,17 +277,17 @@ public class App {
 	        // Using random method 
 	        Random rndm_method = new Random(); 
 	  
-	        char[] password = new char[len]; 
+	        char[] onePassword = new char[len]; 
 	  
 	        for (int i = 0; i < len; i++) 
 	        { 
 	            // Use of charAt() method : to get character value 
 	            // Use of nextInt() as it is scanning the value as int 
-	            password[i] = 
+	            onePassword[i] = 
 	              values.charAt(rndm_method.nextInt(values.length())); 
 	  
 	        } 
-	        return password; 
+	        return onePassword; 
 			
 		}
 		

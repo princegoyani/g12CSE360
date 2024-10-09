@@ -1,12 +1,18 @@
 package edu.asu.DatabasePart1;
-import java.sql.*;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 
 public class DatabaseHelper {
 
 	// JDBC driver name and database URL 
 	static final String JDBC_DRIVER = "org.h2.Driver";   
-	static final String DB_URL = "jdbc:h2:~/databaseTrial2";  
+	static final String DB_URL = "jdbc:h2:~/databaseTrial5";  
 
 	//  Database credentials 
 	static final String USER = "sa"; 
@@ -32,12 +38,12 @@ public class DatabaseHelper {
 				+ "id INT AUTO_INCREMENT PRIMARY KEY, "
 				+ "username VARCHAR(255) UNIQUE, "
 				+ "password VARCHAR(255), "
-				+ "role VARCHAR(20), "
+				+ "roles VARCHAR(255), "
 				+ "email VARCHAR(50), "
 				+ "firstName VARCHAR(20), "
 				+ "middleName VARCHAR(20), "
 				+ "lastName VARCHAR(20), "
-				+ "oneTimePassword VARCHAR(100)"
+				+ "oneTimePassword VARCHAR(100), "
 				+")";
 		statement.execute(userTable);
 	}
@@ -53,29 +59,29 @@ public class DatabaseHelper {
 		return true;
 	}
 
-	public void register(String username, String password, String role) throws SQLException {
-		String insertUser = "INSERT INTO cse360users (username, password, role ) VALUES (?, ?, ?)";
+	public void register(String username, String password, String[] role) throws SQLException {
+		String insertUser = "INSERT INTO cse360users (username, password, roles ) VALUES (?, ?, ?)";
 		try (PreparedStatement pstmt = connection.prepareStatement(insertUser)) {
+			Array sqlArray = connection.createArrayOf("text", role);
+
 			pstmt.setString(1, username);
 			pstmt.setString(2, password);
-			pstmt.setString(3, role);
+			pstmt.setArray(3, sqlArray);
+
 			pstmt.executeUpdate();
 		}
 	}
 
-	public String[] login(String username, String password, String role) throws SQLException {
-		System.out.println(username+password+role);
+	public String[] login(String username, String password) throws SQLException {
 		displayUsersByAdmin();
-		String query = "SELECT * FROM cse360users WHERE username = ? AND password = ? AND role = ?";
+		String query = "SELECT * FROM cse360users WHERE username = ? AND password = ?";
 
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 			pstmt.setString(1, username);
 			pstmt.setString(2, password);
-			pstmt.setString(3, role);
 			ResultSet rs = pstmt.executeQuery();
 			
 			if (rs.next()) {
-				System.out.println("T");
 				return getStringArrayFromResult(rs);
 			}
 			
@@ -122,7 +128,7 @@ public class DatabaseHelper {
 			int id  = rs.getInt("id"); 
 			String username = rs.getString("username"); 
 			String password = rs.getString("password"); 
-			String role = rs.getString("role");  
+			String role = rs.getString("roles");  
 
 			// Display values 
 			System.out.print("ID: " + id); 
@@ -184,7 +190,7 @@ public class DatabaseHelper {
 	        pstmt.setString(3, role);
 	        
 	        //add check data statement
-	        ResultSet rs = pstmt.executeQuery();
+	        int rs = pstmt.executeUpdate();
 	        return true;
 		}
 	}
@@ -198,6 +204,36 @@ public class DatabaseHelper {
 			pstmt.executeUpdate();
 		}
 	}
+
+	public String[] getRoleArray(String username,String password) throws SQLException{
+		String query = "SELECT roles FROM cse360users WHERE username = ? AND password =?";
+		try (PreparedStatement stmt = connection.prepareStatement(query)) {
+			stmt.setString(1, username);
+			stmt.setString(2, password);
+			ResultSet rs = stmt.executeQuery();
+
+			if (rs.next()) {
+				String[] roles = rs.getString("roles").split(",");
+				return  roles;
+			}
+			
+		}
+		return null;
+	} 
+
+	public String checkInvitedUser(String username) throws SQLException{
+		String query = "SELECT oneTimePassword FROM cse360users WHERE username = ?";
+		try (PreparedStatement stmt = connection.prepareStatement(query)) {
+			stmt.setString(1, username);
+			ResultSet rs = stmt.executeQuery();
+
+			if (rs.next()) {
+				return rs.getString("oneTimePassword");
+			}
+		}
+		return null;
+	}
+
 
 	public void closeConnection() {
 		try{ 
