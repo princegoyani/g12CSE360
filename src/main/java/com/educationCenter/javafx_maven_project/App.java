@@ -39,6 +39,7 @@ public class App {
 					switch (role) {
 					case "Admin":
 						System.out.println(adminLogin());
+						if (adminLogin
 						System.out.println(datas[4]);
 						if (datas[4] == null && adminSetupLogin()) {
 							adminHome();
@@ -75,8 +76,12 @@ public class App {
 			logout();
 		}
 		default:
-			throw new IllegalArgumentException("Unexpected value: " + command);
+			adminHome();
 		}
+		
+	}
+
+	public static void resetPasword(){
 		
 	}
 	
