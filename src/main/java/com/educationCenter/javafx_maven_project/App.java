@@ -75,12 +75,15 @@ public class App {
     	
     }
     
-	public static void adminHome() throws SQLException{
-		System.out.println("1.logout");
+	public static void adminHome(){
+		System.out.println("1.logout 2.generateUser");
 		String command = scanner.nextLine();
 		switch (command) {
 		case "logout": {
 			logout();
+		}
+		case "generateUser":{
+			
 		}
 		default:
 			adminHome();
@@ -88,8 +91,23 @@ public class App {
 		
 	}
 
+	public static void generateUser(){
+		while (true){
+		System.out.println("Enter Preferred Username : ");
+		String testUser = scanner.nextLine();
+
+		if (databaseHelper.doesUserExist()){
+			
+		}
+		
+		}
+		
+		
+		databaseHelper.generateNewUser();
+	}
+
 	public static void resetPasword(String forgotpasswordUsername){
-		String[] collectedData = databaseHelper.doesUserExist(username,"admin");
+		String[] collectedData = databaseHelper.doesUserExist(username);
 
 		if (collectedData[4] == null){
 			if (adminSetupLogin()){
