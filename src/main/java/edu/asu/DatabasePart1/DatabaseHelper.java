@@ -97,16 +97,17 @@ public class DatabaseHelper {
 		return values;
 		
 	}
-	public boolean doesUserExist(String email) {
-	    String query = "SELECT COUNT(*) FROM cse360users WHERE email = ?";
+	public boolean doesUserExist(String username, String role) {
+	    String query = "SELECT COUNT(*) FROM cse360users WHERE username = ? AND role = ?";
 	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 	        
-	        pstmt.setString(1, email);
+	        pstmt.setString(1, username);
+		pstmt.setString(2, role);
 	        ResultSet rs = pstmt.executeQuery();
 	        
 	        if (rs.next()) {
 	            // If the count is greater than 0, the user exists
-	            return rs.getInt(1) > 0;
+	            return getStringArrayFromResult(rs);
 	        }
 	    } catch (SQLException e) {
 	        e.printStackTrace();
@@ -175,7 +176,21 @@ public class DatabaseHelper {
         // Execute the update statement
 
 	}
-	
+	public boolean updatePassword(String username, String password, String role){
+		String sql = "UPDATE cse360users SET password = ? WHERE username = ? , role = ? ";
+        
+        // Set values for the placeholders
+		try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+			ResultSet rs = pstmt.executeQuery();
+	        pstmt.setString(1, password);  // New password
+	        pstmt.setString(2, username);   // New role
+	        pstmt.setString(3, role);
+	        
+	        //add check data statement
+	        
+	        return true;
+		}
+	}
 
 	public void closeConnection() {
 		try{ 
