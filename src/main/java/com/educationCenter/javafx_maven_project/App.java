@@ -37,68 +37,53 @@ public class App {
 					}
 				}
 	    		else {
-					System.out.println( "1.Login 2.ForgotPassword" );
-					String choice = scanner.nextLine();
-					
-					switch (choice) {
-						case "1":
-							if(!appLogin()){
-								System.out.println("Invalid Login!");
+					if (username == null){
+						System.out.println( "1.Login 2.ForgotPassword" );
+						String choice = scanner.nextLine();
+						
+						switch (choice) {
+							case "1":
+								if(!appLogin()){
+									System.out.println("Invalid Login!");
+								}
 								continue;
-							};
-							System.out.println(activeRole);
+							case "2":
+									System.out.println("Enter Username: ");
+									String forgetUsername = scanner.nextLine();
+									resetPasword(forgetUsername);
+									continue;
+								default:
+									continue;
+							}
+					}else{
 							switch (activeRole) {
 								case "admin":
 									adminHome();
-									continue;
+									break;
 								case "student":
 									studentHome();
-									continue;
+									break;
 								case "instructor":
 									instructorHome();
-									continue;
+									break;
 								case "parents":
 									parentsHome();
-									continue;
+										break;
+										
 								default:
 									break;
 							}
-							
-							continue;
-						case "2":
-							System.out.println("Enter Fordot Username: ");
-							String forgetUsername = scanner.nextLine();
-							resetPasword(forgetUsername);
-							continue;
-						default:
-							continue;
-					}
 				}
 			}
-	    		
-    	}catch (SQLException e) {
+			continue;
+		}}catch (SQLException e) {
     		System.out.println(e.getMessage());
     	}
     	databaseHelper.closeConnection();
     	
     }
     
-	public static void adminHome() throws SQLException {
-		System.out.println("1.logout 2.generateUser");
-		String command = scanner.nextLine();
-		switch (command) {
-		case "1": {
-			logout();
-			break;
-		}
-		case "2":{
-			generateUser();
-		}
-		default:
-			adminHome();
-		}
-		
-	}
+
 
 	public static void generateUser() throws SQLException  {
 		String testUser ;
@@ -134,17 +119,18 @@ public class App {
 			return false;
 		}
 		if (collectedData[4] == null){
-			if (setupUserInformation()){
+			if (setupUserInformation(forgotpasswordUsername,null)){
 			collectedData = databaseHelper.doesUserExist(forgotpasswordUsername);
 			}else{
 				System.out.println("Invalid Try Again!");
 				return false;
 			}
-		}//udcNKKhA
-
+		}else{
 		if(verifyEmail(collectedData[4]) == false){
 			return false;
-		}else {
+		}}
+
+		
 	    int trials = 3;
 	    String passWord = "";
 	    while (trials > 0 ) {
@@ -165,8 +151,7 @@ public class App {
 		};
 		password = passWord;
 		System.out.println("Update Succefull");
-		return true;
-	}
+		return true;	
 	
 	}
 	
@@ -235,7 +220,7 @@ public class App {
 				password = credentials;
 				checkrole();
 				if(datas[4] == null){
-					setupUserInformation();
+					setupUserInformation(loginName,credentials);
 				}
 				return true;
 			}
@@ -269,7 +254,6 @@ public class App {
 
 		private static void checkrole() throws SQLException{
 			String[] roles = databaseHelper.getRoleArray(username,password);
-			System.out.println(roles);
 			if (roles.length > 1){
 				System.out.println("Choose Roles: ");
 				for (int i = 1; i > roles.length;i++ ){
@@ -283,7 +267,7 @@ public class App {
 			}
 
 		}
-		private static boolean setupUserInformation() throws SQLException {
+		private static boolean setupUserInformation(String user, String pass) throws SQLException {
 			
 			// name input
 			System.out.print("Enter Frist Name: ");
@@ -297,12 +281,11 @@ public class App {
 			System.out.print("Enter Email: ");
 			String email = scanner.nextLine();
 			databaseHelper.displayUsersByAdmin();
-			datas = databaseHelper.login(username, password);
-			if (verifyEmail(email) && datas != null) {
+			if (verifyEmail(email)) {
 				System.out.println("Admin login successful.");
 				databaseHelper.displayUsersByAdmin();
 				String[] userData = {email,fristName,middleName,lastName};
-				if (databaseHelper.updateUserInformation(username,password,userData)){
+				if (databaseHelper.updateUserInformation(user,userData)){
 					return true;
 				};
 			} else {
@@ -361,25 +344,117 @@ public class App {
 			return false;
 		}
 
+		public static boolean deleteUser() throws  SQLException{
+			System.out.println("Enter Username : ");
+			String inputUser = scanner.nextLine();
+
+			String[] collectedUser = databaseHelper.doesUserExist(inputUser);
+			if ( collectedUser == null){
+				System.out.println("No such user!");
+				return false;
+			}
+			System.out.printf("Are you sure ? (YES OR NO) Deleting %s %s %s" , collectedUser[0],collectedUser[1], collectedUser[3]);
+			String confimation = scanner.nextLine();
+			switch (confimation) {
+				case "YES":
+					if (databaseHelper.deleteUser(inputUser)){						
+						System.out.println("Deleted Successfully");
+						return true;
+					}else{
+						System.out.println("Deleting unSuccessfully");
+					};
+					break;
+				default:
+					break;
+			}
+			
+			return false;
+			
+		};
+
+		public static boolean addOrRemoveRole() throws SQLException{
+			System.out.println("Enter Username: ");
+			String inputUser = scanner.nextLine();
+
+			String[] collectedUser = databaseHelper.doesUserExist(inputUser);
+			if ( collectedUser == null){
+				System.out.println("No such user!");
+				return false;
+			}
+			
+			System.out.println("User with roles : " + collectedUser[3]);
+			System.out.println("1. Add Role 2.Delete Role ");
+			String whatAction = scanner.nextLine();
+			System.out.println("Role to Edit: ");
+			String inputRole = scanner.nextLine();
+			String updateRoles = collectedUser[3];
+			switch (whatAction) {
+				
+				case "1":
+					updateRoles = collectedUser[3].substring(0, collectedUser[3].length() -2) + " , " + inputRole + "]";
+					break;
+				case "2": 
+					updateRoles = collectedUser[3].replace(inputRole, "");
+					updateRoles = updateRoles.replace(inputRole, " , ");
+					break;
+				default:
+					throw new AssertionError();
+			}
+
+			
+			databaseHelper.updateRole(inputUser,updateRoles);
+
+			return false;
+		}
+
+
+		public static void adminHome() throws SQLException {
+			System.out.println("1.logout 2.Add User 3. Delete User 4.List Users 5. Add Role to user");
+			String command = scanner.nextLine();
+			switch (command) {
+			case "1": {
+				logout();
+				break;
+			}
+			case "2":{
+				generateUser();
+				break;
+			}
+			case "3":{
+				deleteUser();
+				break;
+			}
+			case "4":{
+				databaseHelper.displayUsersByAdmin();
+				break;
+			}
+			case "5":{
+				addOrRemoveRole();
+				break;
+			}
+			default:
+				adminHome();
+			}
+			
+		}
 		public static void studentHome(){
-			while (true) { 
+			
 				
-				System.out.println("1. Logout");
-				String choice = scanner.nextLine();
-				
-				switch (choice) {
-					case "1":
-						logout();
-						break;
-					default:
-						continue;
-				}
+			System.out.println("1. Logout");
+			String choice = scanner.nextLine();
+			
+			switch (choice) {
+				case "1":
+					logout();
+					break;
+				default:
+					studentHome();
 			}
 
 		}
 
 		public static void instructorHome(){
-			while (true) { 
+			
 				
 				System.out.println("1. Logout");
 				String choice = scanner.nextLine();
@@ -389,14 +464,14 @@ public class App {
 						logout();
 						break;
 					default:
-						continue;
+						instructorHome();
 				}
 			}
 
-		}
+		
 
 		public static void parentsHome(){
-			while (true) { 
+			
 				
 				System.out.println("1. Logout");
 				String choice = scanner.nextLine();
@@ -406,10 +481,10 @@ public class App {
 						logout();
 						break;
 					default:
-						continue;
+						parentsHome();
 				}
 			}
 
-		}
+		
 
 }

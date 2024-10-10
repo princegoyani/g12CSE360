@@ -12,7 +12,7 @@ public class DatabaseHelper {
 
 	// JDBC driver name and database URL 
 	static final String JDBC_DRIVER = "org.h2.Driver";   
-	static final String DB_URL = "jdbc:h2:~/databaseTrial5";  
+	static final String DB_URL = "jdbc:h2:~/databaseTrial6";  
 
 	//  Database credentials 
 	static final String USER = "sa"; 
@@ -136,42 +136,20 @@ public class DatabaseHelper {
 		ResultSet rs = stmt.executeQuery(sql); 
 
 		while(rs.next()) { 
-			// Retrieve by column name 
-			int id  = rs.getInt("id"); 
-			String username = rs.getString("username"); 
-			String password = rs.getString("password"); 
-			String role = rs.getString("roles");  
-
-			// Display values 
-			System.out.print("ID: " + id); 
-			System.out.print(", username: " + username); 
-			System.out.print(", password: " + password); 
-			System.out.println(", Role: " + role); 
+			// Retrieve
+			String[] data = getStringArrayFromResult(rs);
+			System.out.print("ID: " + data[0]); 
+			System.out.print(", username: " + data[1]); 
+			System.out.print(", Role: " + data[3]); 
+			System.out.println(", Email: " + data[4]); 
+			System.out.println(", Frist Name: " + data[6]); 
 		} 
 	}
 	
-	public void displayUsersByUser() throws SQLException{
-		String sql = "SELECT * FROM cse360users"; 
-		Statement stmt = connection.createStatement();
-		ResultSet rs = stmt.executeQuery(sql); 
-
-		while(rs.next()) { 
-			// Retrieve by column name 
-			int id  = rs.getInt("id"); 
-			String  email = rs.getString("email"); 
-			String password = rs.getString("password"); 
-			String role = rs.getString("role");  
-
-			// Display values 
-			System.out.print("ID: " + id); 
-			System.out.print(", Age: " + email); 
-			System.out.print(", First: " + password); 
-			System.out.println(", Last: " + role); 
-		} 
-	}
+	
 	// note: updating roles
-	public boolean updateUserInformation(String username,String password,String[] adminData) throws SQLException {
-		String sql = "UPDATE cse360users SET email = ?, firstName = ?, middleName = ?, lastName = ? WHERE username = ? AND password = ?";
+	public boolean updateUserInformation(String username,String[] adminData) throws SQLException {
+		String sql = "UPDATE cse360users SET email = ?, firstName = ?, middleName = ?, lastName = ? WHERE username = ?";
         
         // Set values for the placeholders
 		try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -181,10 +159,10 @@ public class DatabaseHelper {
 	        pstmt.setString(3, adminData[2]);
 	        pstmt.setString(4, adminData[3]);
 	        pstmt.setString(5, username);
-	        pstmt.setString(6, password);
+	        
 	        
 			int row = pstmt.executeUpdate();
-	        return row >0;
+	        return row > 0;
 			}
 		
         // Execute the update statement
@@ -204,7 +182,24 @@ public class DatabaseHelper {
 	        int rs = pstmt.executeUpdate();
 	        return true;
 		}
-		
+
+	}
+
+	public boolean updateRole(String username, String updateStringRole) throws SQLException{
+
+		String sql = "UPDATE cse360users SET roles = ? WHERE username = ? ";
+        
+        // Set values for the placeholders
+		try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+			
+	        pstmt.setString(1, updateStringRole);  // New password
+			pstmt.setString(2, username);   // New role
+	        
+	        //add check data statement
+	        int rs = pstmt.executeUpdate();
+	        return true;
+		}
+
 	}
 
 	public String[] getRoleArray(String username,String password) throws SQLException{
@@ -218,7 +213,7 @@ public class DatabaseHelper {
 				String roles = rs.getString("roles");
 				String fliter = roles.substring(1, roles.length()-1);
 				System.out.println(roles);
-				return fliter.split(",");
+				return fliter.split(" , ");
 			}
 		}
 		return null;
@@ -237,7 +232,19 @@ public class DatabaseHelper {
 		return null;
 	}
 
+	public boolean deleteUser(String username) throws SQLException{
+		String query = "DELETE FROM cse360users WHERE username = ?";
+		try (PreparedStatement stmt = connection.prepareStatement(query)) {
+			stmt.setString(1, username);
+			int rs = stmt.executeUpdate();
 
+			if (rs > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public void closeConnection() {
 		try{ 
 			if(statement!=null) statement.close(); 
