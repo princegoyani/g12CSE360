@@ -19,7 +19,21 @@ public class App {
 	private static String activeRole;
 	private static String[] datas; 
 
-	public static void main(String[] args) {
+	public static boolean Login(String user, String pass) throws SQLException{
+
+		if (databaseHelper.isDatabaseEmpty()) {
+			System.out.println( "In-Memory Database  is empty" );
+			//set up administrator access
+			return setupAdministrator(user, pass);
+		}
+		return false;
+	}
+	
+	public static String[] getDatas(){
+		return datas;
+	}
+
+	public static void App() {
     	
     	try {
     		
@@ -30,7 +44,7 @@ public class App {
 	    		if (databaseHelper.isDatabaseEmpty()) {
 					System.out.println( "In-Memory Database  is empty" );
 					//set up administrator access
-					if (setupAdministrator()) {
+					if (setupAdministrator(username,password)) {
 						// add if needed
 					}else { 
 						System.out.println("Try Again !");
@@ -85,30 +99,37 @@ public class App {
     
 
 
-	public static void generateUser() throws SQLException  {
-		String testUser ;
-		String[] user ;
-		String testRole;
-		while (true){
-		System.out.println("Enter Preferred Username : ");
-		testUser = scanner.nextLine();
+	public static boolean generateUser(String testUser, String testRole) throws SQLException  {
+		String[] user;
+
+		// while (true){
+		// System.out.println("Enter Preferred Username : ");
+		// testUser = scanner.nextLine();
+		// user = databaseHelper.doesUserExist(testUser);
+		// if (user != null){
+		// 	System.out.println("Already Exists Username, Try Again!");
+		// 	continue;
+		// }
+		// System.out.println("Enter Preferred User Role : ");
+		// testRole = scanner.nextLine();
+		// break;
+		// }
+		
 		user = databaseHelper.doesUserExist(testUser);
 		if (user != null){
 			System.out.println("Already Exists Username, Try Again!");
-			continue;
+			return false;
 		}
-		System.out.println("Enter Preferred User Role : ");
-		testRole = scanner.nextLine();
-		break;
-		}
-		
 		char[] onetimeCode = generateRandomOneTimeCode();
 		String onetimeCodeString = new String(onetimeCode);
+
 		String expiringDateTime = LocalDateTime.now().plusDays(7).format(DateTimeFormatter.ISO_DATE_TIME);
 		String codeDetails = expiringDateTime+" "+onetimeCodeString;
+		
 		String[] userRoles = {testRole};
 
 		databaseHelper.generateUserByAdmin(testUser,userRoles,codeDetails);
+		return true;
 		}
  
 	public static boolean resetPasword(String forgotpasswordUsername) throws SQLException{
@@ -162,34 +183,35 @@ public class App {
 		activeRole=null;
 		}
     
-	 public static boolean setupAdministrator() throws SQLException {
-	    int trials = 3;
-	    String userName = "";
-	    String passWord = "";
-	    while (trials > 0 ) {
-			System.out.println("Setting up the Administrator access.");
-			System.out.print("Enter Admin Username: ");
-			userName = scanner.nextLine();
-			System.out.print("Enter Admin Password: ");
-			passWord = scanner.nextLine();
-			System.out.print("Enter Admin Re-EnterPassword: ");
-			String rePassword = scanner.nextLine();
+	 public static boolean setupAdministrator(String user,String pass) throws SQLException {
+	    // int trials = 3;
+	    // String userName = "";
+	    // String passWord = "";
+	    // while (trials > 0 ) {
+		// 	System.out.println("Setting up the Administrator access.");
+		// 	System.out.print("Enter Admin Username: ");
+		// 	userName = scanner.nextLine();
+		// 	System.out.print("Enter Admin Password: ");
+		// 	passWord = scanner.nextLine();
+		// 	System.out.print("Enter Admin Re-EnterPassword: ");
+		// 	String rePassword = scanner.nextLine();
 			
-			if (!passWord.equals(rePassword)) {
-			trials = trials - 1;  
-			System.out.printf("Password doesn't match, %d trails left!", trials );
-			continue;
-			}		
+		// 	if (!passWord.equals(rePassword)) {
+		// 	trials = trials - 1;  
+		// 	System.out.printf("Password doesn't match, %d trails left!", trials );
+		// 	continue;
+		// 	}		
 				
-			break;
-	    }
-	    if (trials == 0 ) {
-			return false;
-	    }
+		// 	break;
+	    // }
+	    // if (trials == 0 ) {
+		// 	return false;
+	    // }
+
 	    String[] roles = {"admin"};
-		databaseHelper.register(userName, passWord, roles);
-		username=  userName;
-		password = passWord;
+		databaseHelper.register(user, pass, roles);
+		username=  user;
+		password = pass;
 		
 		System.out.println("Administrator setup completed.");
 		
@@ -417,7 +439,7 @@ public class App {
 				break;
 			}
 			case "2":{
-				generateUser();
+				//generateUser();
 				break;
 			}
 			case "3":{
