@@ -1,4 +1,4 @@
-package Interface;
+package layout.Interface;
 
 public class Instructor {
     private String name;

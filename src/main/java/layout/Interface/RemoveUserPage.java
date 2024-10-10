@@ -1,4 +1,4 @@
-package Interface;
+package layout.Interface;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -8,19 +8,17 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class NewUserCreation extends Application {
+public class RemoveUserPage extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("New User Creation");
+        primaryStage.setTitle("Remove User");
 
-        Label usernameLabel = new Label("Username:");
+        Label usernameLabel = new Label("Enter Username to Remove:");
         TextField usernameField = new TextField();
-        Label emailLabel = new Label("Email:");
-        TextField emailField = new TextField();
-        Button createButton = new Button("Create User");
+        Button removeButton = new Button("Remove");
 
-        VBox vbox = new VBox(10, usernameLabel, usernameField, emailLabel, emailField, createButton);
+        VBox vbox = new VBox(10, usernameLabel, usernameField, removeButton);
         Scene scene = new Scene(vbox, 300, 200);
         primaryStage.setScene(scene);
         primaryStage.show();

@@ -1,4 +1,4 @@
-package Interface;
+package layout.Interface;
 public class DatabaseHelper {
     
     public static boolean isDatabaseEmpty() {

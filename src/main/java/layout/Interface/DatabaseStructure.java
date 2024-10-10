@@ -1,4 +1,4 @@
-package Interface;
+package layout.Interface;
 public class DatabaseStructure {
     
     public static void createTables() {

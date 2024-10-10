@@ -1,4 +1,4 @@
-package Interface;
+package layout.Interface;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
