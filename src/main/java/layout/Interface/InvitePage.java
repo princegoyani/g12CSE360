@@ -2,9 +2,7 @@ package layout.Interface;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -14,12 +12,39 @@ public class InvitePage extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Invite Page");
 
-        Label inviteLabel = new Label("Enter your invite code:");
-        TextField inviteField = new TextField();
-        Button submitButton = new Button("Submit");
+        // Create the role selection using radio buttons
+        ToggleGroup roleGroup = new ToggleGroup();
 
-        VBox vbox = new VBox(10, inviteLabel, inviteField, submitButton);
-        Scene scene = new Scene(vbox, 300, 200);
+        RadioButton adminRadio = new RadioButton("Admin");
+        adminRadio.setToggleGroup(roleGroup);
+        RadioButton instructorRadio = new RadioButton("Instructor");
+        instructorRadio.setToggleGroup(roleGroup);
+        RadioButton studentRadio = new RadioButton("Student");
+        studentRadio.setToggleGroup(roleGroup);
+
+        // Confirm Invite Button
+        Button confirmInviteButton = new Button("Confirm Invite");
+
+        // Label to display the generated invite code
+        Label inviteCodeLabel = new Label();
+
+        // Set action for the confirm button
+        confirmInviteButton.setOnAction(e -> {
+            // Generate invite code (you can change the logic for code generation)
+            String inviteCode = "IS" + System.currentTimeMillis();
+            
+            // Display the invite code
+            inviteCodeLabel.setText("Invite code successfully generated: " + inviteCode);
+        });
+
+        // Layout setup
+        VBox layout = new VBox(10);
+        layout.getChildren().addAll(new Label("Which roles do you want the user to have"), 
+                                    adminRadio, instructorRadio, studentRadio, 
+                                    confirmInviteButton, inviteCodeLabel);
+
+        // Create the scene and show it
+        Scene scene = new Scene(layout, 300, 200);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
