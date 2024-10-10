@@ -49,6 +49,7 @@ public class StartCSE360 {
 	}
 
 	private static void setupAdministrator() throws SQLException {
+		//set up an administrator account
 		System.out.println("Setting up the Administrator access.");
 		System.out.print("Enter Admin Email: ");
 		String email = scanner.nextLine();
@@ -60,6 +61,7 @@ public class StartCSE360 {
 	}
 
 	private static void userFlow() throws SQLException {
+		// Handles non-admin accounts. THey can register or login.
 		String email = null;
 		String password = null;
 		System.out.println("user flow");
@@ -96,6 +98,7 @@ public class StartCSE360 {
 	}
 
 	private static void adminFlow() throws SQLException {
+		// Handles admin accounts. Admins can log in here.
 		System.out.println("admin flow");
 		System.out.print("Enter Admin Email: ");
 		String email = scanner.nextLine();

@@ -33,6 +33,7 @@ public class DatabaseHelper {
 	}
 
 	private void createTables() throws SQLException {
+		// Stores account information
 		String userTable = "CREATE TABLE IF NOT EXISTS cse360users ("
 				+ "id INT AUTO_INCREMENT PRIMARY KEY, "
 				+ "username VARCHAR(255) UNIQUE, "
@@ -57,6 +58,7 @@ public class DatabaseHelper {
 	}
 
 	public void register(String username, String password, String role) throws SQLException {
+		// Function to register a new user into the database
 		String insertUser = "INSERT INTO cse360users (username, password, role ) VALUES (?, ?, ?)";
 		try (PreparedStatement pstmt = connection.prepareStatement(insertUser)) {
 			pstmt.setString(1, username);
@@ -67,6 +69,7 @@ public class DatabaseHelper {
 	}
 
 	public String[] login(String username, String password, String role) throws SQLException {
+		// Handles login using the database
 		System.out.println(username+password+role);
 		displayUsersByAdmin();
 		String query = "SELECT * FROM cse360users WHERE username = ? AND password = ? AND role = ?";
@@ -98,6 +101,7 @@ public class DatabaseHelper {
 		
 	}
 	public boolean doesUserExist(String email) {
+		// Checks if an account associated with an email exists
 	    String query = "SELECT COUNT(*) FROM cse360users WHERE email = ?";
 	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 	        
@@ -115,6 +119,9 @@ public class DatabaseHelper {
 	}
 
 	public void displayUsersByAdmin() throws SQLException{
+		// Display all users while having admin priveledge. Displays every
+		// user as well as their id, username, password, and role(s).
+		// Should ONLY be called by admins since it reveals sensitive information.
 		String sql = "SELECT * FROM cse360users"; 
 		Statement stmt = connection.createStatement();
 		ResultSet rs = stmt.executeQuery(sql); 
@@ -135,6 +142,9 @@ public class DatabaseHelper {
 	}
 	
 	public void displayUsersByUser() throws SQLException{
+		// Display all users. Displays every
+		// user as well as basic information such as id, email, 
+		// first name, and last name.
 		String sql = "SELECT * FROM cse360users"; 
 		Statement stmt = connection.createStatement();
 		ResultSet rs = stmt.executeQuery(sql); 
