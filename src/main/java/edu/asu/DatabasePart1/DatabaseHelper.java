@@ -43,7 +43,7 @@ public class DatabaseHelper {
 				+ "firstName VARCHAR(20), "
 				+ "middleName VARCHAR(20), "
 				+ "lastName VARCHAR(20), "
-				+ "oneTimePassword VARCHAR(100), "
+				+ "oneTimePassword VARCHAR(100)"
 				+")";
 		statement.execute(userTable);
 	}
@@ -72,6 +72,17 @@ public class DatabaseHelper {
 		}
 	}
 
+	public void generateUserByAdmin(String username,String[] role,String codeDetail) throws SQLException{
+		String sql = "INSERT INTO cse360users (username,roles,oneTimePassword) VALUES (?,?,?)";
+		try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+			Array sqlArray = connection.createArrayOf("text", role);
+			pstmt.setString(1, username);
+			pstmt.setArray(2, sqlArray);
+			pstmt.setString(3, codeDetail);
+			pstmt.executeUpdate();
+		}
+	}
+
 	public String[] login(String username, String password) throws SQLException {
 		displayUsersByAdmin();
 		String query = "SELECT * FROM cse360users WHERE username = ? AND password = ?";
@@ -84,7 +95,7 @@ public class DatabaseHelper {
 			if (rs.next()) {
 				return getStringArrayFromResult(rs);
 			}
-			
+			System.out.println("NO USER");;
 			return null;
 		
 		}
@@ -101,10 +112,11 @@ public class DatabaseHelper {
 		
 	}
 	public String[] doesUserExist(String username) {
+		System.out.println(username);
 	    String query = "SELECT * FROM cse360users WHERE username = ?";
 	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 	        
-	        pstmt.setString(1, username);
+	        pstmt.setString(1,username);
 	        ResultSet rs = pstmt.executeQuery();
 	        
 	        if (rs.next()) {
@@ -158,12 +170,11 @@ public class DatabaseHelper {
 		} 
 	}
 	// note: updating roles
-	public boolean updateAdminUser(String username,String password,String[] adminData) throws SQLException {
+	public boolean updateUserInformation(String username,String password,String[] adminData) throws SQLException {
 		String sql = "UPDATE cse360users SET email = ?, firstName = ?, middleName = ?, lastName = ? WHERE username = ? AND password = ?";
         
         // Set values for the placeholders
 		try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-			
 			
 	        pstmt.setString(1, adminData[0]);  // New password
 	        pstmt.setString(2, adminData[1]);   // New role
@@ -179,30 +190,21 @@ public class DatabaseHelper {
         // Execute the update statement
 
 	}
-	public boolean updatePassword(String username, String password, String role)throws SQLException {
-		String sql = "UPDATE cse360users SET password = ? WHERE username = ? , role = ? ";
+	public boolean updatePassword(String username, String password)throws SQLException {
+		String sql = "UPDATE cse360users SET password = ?,oneTimePassword = ? WHERE username = ? ";
         
         // Set values for the placeholders
 		try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
 			
 	        pstmt.setString(1, password);  // New password
-	        pstmt.setString(2, username);   // New role
-	        pstmt.setString(3, role);
+	        pstmt.setString(2, null);
+			pstmt.setString(3, username);   // New role
 	        
 	        //add check data statement
 	        int rs = pstmt.executeUpdate();
 	        return true;
 		}
-	}
-
-	public void generateUserByAdmin(String username,String role,String codeDetail) throws SQLException{
-		String sql = "INSERT INTO cse360users (username,role,oneTimePassword) VALUES (?,?,?)";
-		try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-			pstmt.setString(1, username);
-			pstmt.setString(2, role);
-			pstmt.setString(3, codeDetail);
-			pstmt.executeUpdate();
-		}
+		
 	}
 
 	public String[] getRoleArray(String username,String password) throws SQLException{
@@ -213,10 +215,11 @@ public class DatabaseHelper {
 			ResultSet rs = stmt.executeQuery();
 
 			if (rs.next()) {
-				String[] roles = rs.getString("roles").split(",");
-				return  roles;
+				String roles = rs.getString("roles");
+				String fliter = roles.substring(1, roles.length()-1);
+				System.out.println(roles);
+				return fliter.split(",");
 			}
-			
 		}
 		return null;
 	} 

@@ -37,21 +37,39 @@ public class App {
 					}
 				}
 	    		else {
-
-
 					System.out.println( "1.Login 2.ForgotPassword" );
 					String choice = scanner.nextLine();
 					
 					switch (choice) {
 						case "1":
-							appLogin();
+							if(!appLogin()){
+								System.out.println("Invalid Login!");
+								continue;
+							};
+							System.out.println(activeRole);
+							switch (activeRole) {
+								case "admin":
+									adminHome();
+									continue;
+								case "student":
+									studentHome();
+									continue;
+								case "instructor":
+									instructorHome();
+									continue;
+								case "parents":
+									parentsHome();
+									continue;
+								default:
+									break;
+							}
 							
+							continue;
 						case "2":
-							System.out.println("Enter Username: ");
+							System.out.println("Enter Fordot Username: ");
 							String forgetUsername = scanner.nextLine();
-
 							resetPasword(forgetUsername);
-
+							continue;
 						default:
 							continue;
 					}
@@ -69,11 +87,11 @@ public class App {
 		System.out.println("1.logout 2.generateUser");
 		String command = scanner.nextLine();
 		switch (command) {
-		case "logout": {
+		case "1": {
 			logout();
 			break;
 		}
-		case "generateUser":{
+		case "2":{
 			generateUser();
 		}
 		default:
@@ -103,23 +121,29 @@ public class App {
 		String onetimeCodeString = new String(onetimeCode);
 		String expiringDateTime = LocalDateTime.now().plusDays(7).format(DateTimeFormatter.ISO_DATE_TIME);
 		String codeDetails = expiringDateTime+" "+onetimeCodeString;
+		String[] userRoles = {testRole};
 
-		databaseHelper.generateUserByAdmin(testUser,testRole,codeDetails);
+		databaseHelper.generateUserByAdmin(testUser,userRoles,codeDetails);
 		}
  
-	public static void resetPasword(String forgotpasswordUsername) throws SQLException{
-		String[] collectedData = databaseHelper.doesUserExist(username);
+	public static boolean resetPasword(String forgotpasswordUsername) throws SQLException{
+		String[] collectedData = databaseHelper.doesUserExist(forgotpasswordUsername);
 
+		if (collectedData == null){
+			System.out.println("No user with given USERNAME");
+			return false;
+		}
 		if (collectedData[4] == null){
-			if (adminSetupLogin()){
-			collectedData = databaseHelper.doesUserExist(username);
+			if (setupUserInformation()){
+			collectedData = databaseHelper.doesUserExist(forgotpasswordUsername);
 			}else{
 				System.out.println("Invalid Try Again!");
+				return false;
 			}
-		}
+		}//udcNKKhA
 
-		if(!verifyEmail(collectedData[4])){
-			
+		if(verifyEmail(collectedData[4]) == false){
+			return false;
 		}else {
 	    int trials = 3;
 	    String passWord = "";
@@ -134,19 +158,23 @@ public class App {
 			System.out.printf("Password doesn't match, %d trails left!", trials );
 			continue;
 			}		
-				
 			break;
 		}
-		databaseHelper.updatePassword(username,password,"admin");
+		if (!databaseHelper.updatePassword(forgotpasswordUsername,passWord)){
+			return false;
+		};
 		password = passWord;
-
+		System.out.println("Update Succefull");
+		return true;
 	}
+	
 	}
 	
 	public static void logout(){
 		username=null;
 		password=null;
 		datas=null;
+		activeRole=null;
 		}
     
 	 public static boolean setupAdministrator() throws SQLException {
@@ -184,43 +212,64 @@ public class App {
 
 	}
 	 
-
-		private static void userFlow() throws SQLException {
-			
-		}
-
 		private static boolean appLogin() throws SQLException {
 			System.out.print("Enter Login Username: ");
 			String loginName = scanner.nextLine();
+
 			String oneTimeCodeInvited = databaseHelper.checkInvitedUser(loginName);
+
 			if (oneTimeCodeInvited != null){
-				loginInvitedUser(loginName,oneTimeCodeInvited);
+				System.out.println("Entry One Time Provieded code : ");
+				String inputCode = scanner.nextLine();
+				if (!loginInvitedUser(loginName,oneTimeCodeInvited,inputCode)){
+					return false;
+				};
 			}
 			
-			System.out.print("Enter Login Password: ");
+			
+			System.out.println("Enter Login Password: ");
 			String credentials = scanner.nextLine();
 			datas = databaseHelper.login(loginName, credentials);
 			if (datas != null) {
 				username = loginName;
 				password = credentials;
 				checkrole();
+				if(datas[4] == null){
+					setupUserInformation();
+				}
 				return true;
 			}
 			return false;
 		}
 		
-		private static void loginInvitedUser(String user,String onetimecode) throws SQLException{
+		private static boolean loginInvitedUser(String user,String onetimecode,String inputCode) throws SQLException{
 			//date
 			String[] onetimearry = onetimecode.split(" ");
 			System.out.println(onetimearry[0] + " " + onetimearry[1]);
+			
+			if (!LocalDateTime.now().isBefore(LocalDateTime.parse(onetimearry[0], DateTimeFormatter.ISO_DATE_TIME))){
+				System.out.println("Credentials Expired!");
+				return false;
+			};
+
 			//passwordmatch
+			if (!inputCode.equals(onetimearry[1])){
+				System.out.println("Wrong Password! Try Again");
+				return false;
+			}
+
 			//createNewPassword
-			//loginagain or setup
+			if (!resetPasword(user)){
+				return false;
+			};
+
+			return true;
+		
 		}
 
 		private static void checkrole() throws SQLException{
 			String[] roles = databaseHelper.getRoleArray(username,password);
-
+			System.out.println(roles);
 			if (roles.length > 1){
 				System.out.println("Choose Roles: ");
 				for (int i = 1; i > roles.length;i++ ){
@@ -229,30 +278,31 @@ public class App {
 				int roleChoice = scanner.nextInt();
 				activeRole = roles[roleChoice-1];
 			}else{
+				System.out.println(roles[0]);
 				activeRole = roles[0];
 			}
 
 		}
-		private static boolean adminSetupLogin() throws SQLException {
+		private static boolean setupUserInformation() throws SQLException {
 			
 			// name input
-			System.out.print("Enter Admin Frist Name: ");
+			System.out.print("Enter Frist Name: ");
 			String fristName = scanner.nextLine();
-			System.out.print("Enter Admin Middle Name: ");
+			System.out.print("Enter Middle Name: ");
 			String middleName = scanner.nextLine();
-			System.out.print("Enter Admin Last Name: ");
+			System.out.print("Enter Last Name: ");
 			String lastName = scanner.nextLine();
 			
 			// email input
-			System.out.print("Enter Admin Email: ");
+			System.out.print("Enter Email: ");
 			String email = scanner.nextLine();
 			databaseHelper.displayUsersByAdmin();
 			datas = databaseHelper.login(username, password);
 			if (verifyEmail(email) && datas != null) {
 				System.out.println("Admin login successful.");
 				databaseHelper.displayUsersByAdmin();
-				String[] adminData = {email,fristName,middleName,lastName};
-				if (databaseHelper.updateAdminUser(username,password,adminData)){
+				String[] userData = {email,fristName,middleName,lastName};
+				if (databaseHelper.updateUserInformation(username,password,userData)){
 					return true;
 				};
 			} else {
@@ -310,4 +360,56 @@ public class App {
 			}
 			return false;
 		}
+
+		public static void studentHome(){
+			while (true) { 
+				
+				System.out.println("1. Logout");
+				String choice = scanner.nextLine();
+				
+				switch (choice) {
+					case "1":
+						logout();
+						break;
+					default:
+						continue;
+				}
+			}
+
+		}
+
+		public static void instructorHome(){
+			while (true) { 
+				
+				System.out.println("1. Logout");
+				String choice = scanner.nextLine();
+				
+				switch (choice) {
+					case "1":
+						logout();
+						break;
+					default:
+						continue;
+				}
+			}
+
+		}
+
+		public static void parentsHome(){
+			while (true) { 
+				
+				System.out.println("1. Logout");
+				String choice = scanner.nextLine();
+				
+				switch (choice) {
+					case "1":
+						logout();
+						break;
+					default:
+						continue;
+				}
+			}
+
+		}
+
 }
