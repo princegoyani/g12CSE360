@@ -61,7 +61,7 @@ public class StartCSE360 {
 	}
 
 	private static void userFlow() throws SQLException {
-		// Handles non-admin accounts. THey can register or login.
+		// Handles non-admin accounts. They can register or login.
 		String email = null;
 		String password = null;
 		System.out.println("user flow");

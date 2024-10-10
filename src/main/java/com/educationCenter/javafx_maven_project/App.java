@@ -33,6 +33,7 @@ public class App {
 					}
 				}
 	    		else {
+	    			// Handles what role the user would like to proceed as
 					System.out.println( "1.Admin 2.Instrutor 3.Student 4.Parents" );
 					String role = scanner.nextLine();
 	
@@ -129,6 +130,7 @@ public class App {
 	 
 
 		private static void userFlow() throws SQLException {
+			// Handles non-admin accounts. They can register or login.
 			String email = null;
 			String password = null;
 			System.out.println("user flow");
