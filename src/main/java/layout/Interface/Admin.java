@@ -9,7 +9,7 @@ public class Admin {
         this.email = email;
     }
 
-    // Getters and setters
+    //Getters and setters
     public String getUsername() {
         return username;
     }
