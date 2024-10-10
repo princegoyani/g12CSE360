@@ -16,7 +16,7 @@ public class AdminHomePage extends Application {
         Button backupRestoreBtn = new Button("Backup & Restore");
         Button logoutBtn = new Button("Logout");
 
-        // Layout and scene setup
+        //Layout and scene setup
         VBox vbox = new VBox(10, manageUsersBtn, backupRestoreBtn, logoutBtn);
         Scene scene = new Scene(vbox, 300, 200);
         primaryStage.setScene(scene);
