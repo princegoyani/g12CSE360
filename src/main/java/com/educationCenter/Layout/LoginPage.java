@@ -2,6 +2,7 @@ package com.educationCenter.Layout;
 import com.educationCenter.Articler_Database_Handler.ArticleDatabase;
 import javafx.application.Application;
 import javafx.scene.Scene;
+<<<<<<< HEAD
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -9,6 +10,9 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+=======
+import javafx.scene.control.*;
+>>>>>>> main/developer
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import com.educationCenter.App;
@@ -171,15 +175,25 @@ public class LoginPage extends Application {
         TextField emailField = new TextField();
         emailField.setPromptText("Enter email");
 
+<<<<<<< HEAD
         TextField roleField = new TextField();
         roleField.setPromptText("Enter role");
+=======
+        ComboBox<String> roleComboBox = new ComboBox<>();
+        roleComboBox.getItems().addAll("Admin", "Instructor", "Student");
+        roleComboBox.setPromptText("Select role");
+>>>>>>> main/developer
 
         Button inviteButton = new Button("Send Invite");
         Button backButton = new Button("Back");
 
         inviteButton.setOnAction(e -> {
             String email = emailField.getText();
+<<<<<<< HEAD
             String role = roleField.getText();
+=======
+            String role = roleComboBox.getValue().toLowerCase();
+>>>>>>> main/developer
             if (email.isEmpty()) {
                 System.out.println("Please enter an email.");
             } else {
@@ -191,7 +205,11 @@ public class LoginPage extends Application {
 
         backButton.setOnAction(e -> showAdminHomepage(primaryStage));
 
+<<<<<<< HEAD
         VBox inviteLayout = new VBox(10, inviteUserLabel, emailField,roleField, inviteButton, backButton);
+=======
+        VBox inviteLayout = new VBox(10, inviteUserLabel, emailField,roleComboBox, inviteButton, backButton);
+>>>>>>> main/developer
         Scene inviteScene = new Scene(inviteLayout, 300, 200);
 
         primaryStage.setScene(inviteScene);
