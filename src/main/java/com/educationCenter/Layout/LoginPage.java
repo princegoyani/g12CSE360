@@ -1,9 +1,8 @@
 package com.educationCenter.Layout;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
+import com.article_db.simpleDatabase.ArticleDatabase;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -15,30 +14,58 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
 import com.example.cse360javaproject.App;
-
-
-
 public class LoginPage extends Application {
-
     // A list to store created users
-
-
 
     @Override
     public void start(Stage primaryStage) {
+
+        // When Help System application is started:
+        //    Create instance of article database helper class, to allow for interface.
+        ArticleDatabase helpDB = new ArticleDatabase(); String[] simArgs ={"arg1", "arg2", "arg3"};
+        try { helpDB.main(simArgs); } catch (Exception e) { throw new RuntimeException(e); }
+        // Article database helper is started, return flow to Help System.
+        // TEST OPERATIONS :
+        try { //helpDB.callMenu("1");
+
+
+            // create non-sens article
+            //helpDB.callCreateArticle("newTitle", "newBody", "newAuthor", "newAbstrac", "newKeywords1", "newReferences", "4", "newGrouping");
+            // create sens article (addt'l args)
+            //helpDB.callCreateArticle("newSensTitle", "newBody", "newAuthor", "newAbstrac", "newKeywords2", "newReferences", "2", "newGrouping", "nonSensTitle", "nonSensAbstrac", "sensKey");
+
+            // edit article 11 ; to be non-sensitive
+            //helpDB.callEditArticle("11", "newSensTitle", "newBody", "newAuthor", "newAbstrac", "newKeywords", "newReferences", "2", "newGrouping newGrp2 newGrp3");
+            // edit article 12 ; to be sensitive
+            //helpDB.callEditArticle("12", "newSensTitle", "newBody", "newAuthor", "newAbstrac", "newKeywords", "newReferences", "2", "newGrouping", "nonSensTitle", "nonSensAbstrac", "sensKey");
+            //
+            //helpDB.callDisplayArticleByGroups("newGroup newGrp3");
+           // System.out.println("Display By Groupings: ");
+            helpDB.callDisplayArticleByGroups("newGrouping");
+           // System.out.println("\n\nDisplay By Keywords: ");
+           helpDB.callDisplayArticleByKeywords("newKeywords2");
+           //helpDB.callDisplayArticleByGroups("newGroup newGrp3");
+
+            helpDB.defaultFlow(); //helpDB.callDisplayArticles(); //helpDB.callDisplayArticleByKey("1");
+
+
+
+        } catch (Exception e) { throw new RuntimeException(e); }
+        // Article database connection has been established, awaiting calls to helper functions.
+        // When Help System exits, call helpDB.callMenu(0) to pass safe disconnect instruction.
+        //
+        // When appropriate, call ArticleDatabase methods to interface with article database.
+
         System.out.println("Connecting to database:");
-        if (App.connect()){
-            if(App.fristUser()){
+        if (App.connect()) {
+            if(App.fristUser()) {
                 showNewUserCreation(primaryStage,null);
             }
-            else{
+            else {
                 showLoginPage(primaryStage);
             }
-
         };
-
     }
 
     private void showLoginPage(Stage primaryStage) {
