@@ -166,7 +166,7 @@ public class LoginPage extends Application {
         emailField.setPromptText("Enter email");
 
         ComboBox<String> roleComboBox = new ComboBox<>();
-        roleComboBox.getItems().addAll("Admin", "Instructor", "Student");
+        roleComboBox.getItems().addAll("Admin", "Instructor");
         roleComboBox.setPromptText("Select role");
 
         Button inviteButton = new Button("Send Invite");
