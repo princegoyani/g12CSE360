@@ -295,8 +295,8 @@ public class LoginPage extends Application {
         studentRole.setToggleGroup(roleGroup);
 
         // Confirm button
-        Button addRole = new Button("Confirm Change");
-        Button removeRole = new Button("Confirm Change");
+        Button addRole = new Button("Add Role");
+        Button removeRole = new Button("Delete Role");
 
         Button backButton = new Button("Back");
 
