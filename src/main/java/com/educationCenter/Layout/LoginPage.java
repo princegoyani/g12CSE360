@@ -9,7 +9,7 @@ import javafx.stage.Stage;
 import com.educationCenter.App;
 public class LoginPage extends Application {
     // A list to store created users
-
+    // new comment
     @Override
     public void start(Stage primaryStage) {
 
