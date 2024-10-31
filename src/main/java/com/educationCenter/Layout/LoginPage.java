@@ -11,6 +11,8 @@ import com.educationCenter.App;
 import javafx.geometry.Insets;
 import javafx.stage.FileChooser;
 import java.io.File;
+import java.util.Objects;
+
 import com.educationCenter.App;
 
 public class LoginPage extends Application {
@@ -871,6 +873,7 @@ public class LoginPage extends Application {
 
     private void showCreateArticlePage(Stage primaryStage) {
         Label createArticleLabel = new Label("Create New Article");
+        Label statusMessage = new Label("");
 
         // Article fields
         TextField titleField = new TextField();
@@ -948,17 +951,29 @@ public class LoginPage extends Application {
                     String sensKey = sensitiveKeyField.getText();
 
                     if (nonSensTitle.isEmpty() || nonSensAbstrac.isEmpty() || sensKey.isEmpty()) {
+                        statusMessage.setText("Please fill in all sensitive information fields.");
                         System.out.println("Please fill in all sensitive information fields.");
                         return;
                     }
 
                     // Call sensitive article creation method in App
                     ArticleDatabase.callCreateArticle(title, content, author, abstrac, keywords, references,difficulty, grouping, nonSensTitle, nonSensAbstrac, sensKey);
+                    statusMessage.setText("Sensitive article created successfully.");
                     System.out.println("Sensitive article created successfully.");
                 } else {
                     // Call non-sensitive article creation method in App
-                    ArticleDatabase.callCreateArticle(title, content, author, abstrac, keywords, references, difficulty, grouping);
-                    System.out.println("Non-sensitive article created successfully.");
+                    if(Objects.equals(statusMessage.getText(), "Non-sensitive article created successfully.")) {
+                        statusMessage.setText("Are you sure you want to create another article? Press create again to make another.");
+                    } else if (Objects.equals(statusMessage.getText(), "Are you sure you want to create another article? Press create again to make another.")){
+                        ArticleDatabase.callCreateArticle(title, content, author, abstrac, keywords, references, difficulty, grouping);
+                        statusMessage.setText("Non-sensitive article created successfully.");
+                        System.out.println("Non-sensitive article created successfully.");
+                    } else {
+                        ArticleDatabase.callCreateArticle(title, content, author, abstrac, keywords, references, difficulty, grouping);
+                        statusMessage.setText("Non-sensitive article created successfully.");
+                        System.out.println("Non-sensitive article created successfully.");
+                    }
+
                 }
             } catch (Exception ex) {
                 System.out.println(ex);
@@ -981,7 +996,7 @@ public class LoginPage extends Application {
 
         VBox createArticleLayout = new VBox(10, createArticleLabel, titleField, contentArea, authorField, abstractField,
                 keywordsField, referencesField, difficultyComboBox, groupingField, sensitiveCheckBox, sensitiveInfoLabel,
-                nonSensTitleField, nonSensAbstractField, sensitiveKeyField, createButton, backButton);
+                nonSensTitleField, nonSensAbstractField, sensitiveKeyField, createButton, backButton,statusMessage);
         createArticleLayout.setPadding(new Insets(10));
 
         Scene createArticleScene = new Scene(createArticleLayout, 400, 600);
