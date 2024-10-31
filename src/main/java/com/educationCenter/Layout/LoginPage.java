@@ -5,6 +5,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import com.educationCenter.App;
 import javafx.geometry.Insets;
@@ -168,9 +169,42 @@ public class LoginPage extends Application {
         listUsersButton.setOnAction(e -> showListUsersPage(primaryStage));
         updateUserRolesButton.setOnAction(e -> showUpdateUserRolesPage(primaryStage));
 
+        //Buttons related to instructor functionality
+        Button createArticle = new Button("Create Article");
+        Button editArticle = new Button("Edit Article");
+        Button viewArticle = new Button("View Article");
+        Button deleteArticle = new Button("Delete Article");
+
+        createArticle.setOnAction(e -> {
+            showCreateArticlePage(primaryStage);
+        });
+
+        editArticle.setOnAction(e -> {
+            showlistArticlePage(primaryStage,"edit");;
+        });
+
+        viewArticle.setOnAction(e -> {
+            showlistArticlePage(primaryStage,"view");
+        });
+
+        deleteArticle.setOnAction(e -> {
+            showdeleteArticlePage(primaryStage);
+        });
+
+
+//        backupData.setOnAction(e -> {
+//            showbackupArticlePage(primaryStage);
+//        });
+//
+//        restoreData.setOnAction(e -> {
+//            showRestoreArticlePage(primaryStage);
+//        });
+
         // Layout for the Admin Homepage
+        VBox instructorLayout = new VBox(10, createArticle,viewArticle,editArticle,deleteArticle);
         VBox adminLayout = new VBox(10, logoutButton, inviteUserButton, deleteUserButton, resetUserButton, listUsersButton, updateUserRolesButton);
-        Scene adminScene = new Scene(adminLayout, 300, 300);
+        HBox mainAdminLayout = new HBox(10, adminLayout, instructorLayout);
+        Scene adminScene = new Scene(mainAdminLayout, 300, 300);
 
         primaryStage.setScene(adminScene);
         primaryStage.show();
@@ -763,7 +797,18 @@ public class LoginPage extends Application {
             }
         });
 
-        backButton.setOnAction(e -> { start(primaryStage); });
+        backButton.setOnAction(e -> {
+            switch(App.getActiveRole()){
+                case "instructor":
+                    showInstructorPage(primaryStage);
+                    break;
+                case "admin":
+                    showAdminHomepage(primaryStage);
+                    break;
+                default:
+                    System.out.println("ERROR: Invalid active role, returning to login screen");
+            }
+        });
         VBox newUserLayout = new VBox(10,deleteArticleLabel,deleteArticleField,deleteArticle,backButton,errorArea);
         Scene newUserScene = new Scene(newUserLayout, 300, 300);
 
@@ -807,7 +852,18 @@ public class LoginPage extends Application {
 
         // back button
         Button backButton = new Button("Back");
-        backButton.setOnAction(e -> start(primaryStage));
+        backButton.setOnAction(e -> {
+            switch (App.getActiveRole()) {
+                case "instructor":
+                    showInstructorPage(primaryStage);
+                    break;
+                case "admin":
+                    showAdminHomepage(primaryStage);
+                    break;
+                default:
+                    System.out.println("ERROR: Invalid active role, returning to login screen");
+            }
+        });
         // layout
         VBox editArticleLayout = new VBox(10, editArticleLabel, titleField, contentArea, saveButton, backButton);
         editArticleLayout.setPadding(new Insets(10)); // Add padding around the layout
@@ -914,7 +970,18 @@ public class LoginPage extends Application {
         });
 
         Button backButton = new Button("Back");
-        backButton.setOnAction(e -> showInstructorPage(primaryStage));
+        backButton.setOnAction(e -> {
+            switch(App.getActiveRole()){
+                case "instructor":
+                    showInstructorPage(primaryStage);
+                    break;
+                case "admin":
+                    showAdminHomepage(primaryStage);
+                    break;
+                default:
+                    System.out.println("ERROR: Invalid active role, returning to login screen");
+            }
+        });
 
         VBox createArticleLayout = new VBox(10, createArticleLabel, titleField, contentArea, authorField, abstractField,
                 keywordsField, referencesField, difficultyComboBox, groupingField, sensitiveCheckBox, sensitiveInfoLabel,
