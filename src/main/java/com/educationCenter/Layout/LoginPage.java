@@ -19,11 +19,21 @@ public class LoginPage extends Application {
         System.out.println("Connecting to database:");
         if (App.connect()) {
             ArticleDatabase.connect_dataBase();
-            if(App.fristUser()) {
-                showNewUserCreation(primaryStage,null);
-            }
-            else {
-                showLoginPage(primaryStage);
+            if (App.getActiveRole() != null) {
+                if (App.getActiveRole().equals("admin")) {
+                    showAdminHomepage(primaryStage);
+                } else if (App.getActiveRole().equals("instructor")) {
+                    showInstructorPage(primaryStage);
+                } else if (App.getActiveRole().equals("student")) {
+                    showStudentPage(primaryStage);
+                }
+            }else {
+
+                if (App.fristUser()) {
+                    showNewUserCreation(primaryStage, null);
+                } else {
+                    showLoginPage(primaryStage);
+                }
             }
         };
     }
@@ -504,7 +514,7 @@ public class LoginPage extends Application {
                 showResetPassword(primaryStage,email);
             }
             else {
-                System.out.println("Something Failed");
+                System.out.println("Something Failed!");
             }
         });
 
@@ -556,7 +566,7 @@ public class LoginPage extends Application {
         });
 
         viewArticle.setOnAction(e -> {
-            showViewArticlePage(primaryStage);
+            showlistArticlePage(primaryStage);
         });
 
         deleteArticle.setOnAction(e -> {
@@ -584,8 +594,44 @@ public class LoginPage extends Application {
         primaryStage.show();
 
     }
+    private void showlistArticlePage(Stage primaryStage) {
+        Label listUsersLabel = new Label("List of Articles:");
+        Button backButton = new Button("Back");
 
-    private void showViewArticlePage(Stage primaryStage) {
+        ListView<String> ArticleListView = new ListView<>();
+        String[][] datas = ArticleDatabase.returnListArticles();
+        if (datas != null) {
+            System.out.println(datas);
+            for (String[] data : datas) {
+                StringBuilder userData = new StringBuilder(data[0]);  // Start with user ID
+                for (int j = 1; j < data.length; j++) {
+                    userData.append(" ").append(data[j]);
+                }
+                ArticleListView.getItems().add(userData.toString());
+            }
+
+            // Handle click events on the user list items
+            ArticleListView.setOnMouseClicked(event -> {
+                String selectedArticle = ArticleListView.getSelectionModel().getSelectedItem();
+                System.out.println(selectedArticle);
+                if (selectedArticle != null) {
+                    String userId = selectedArticle.split(" ")[0];  // Assuming ID is the first element
+                    System.out.println(userId);
+                    showViewArticlePage(primaryStage, userId);
+                }
+            });
+
+            backButton.setOnAction(e -> start(primaryStage));
+
+            VBox listUsersLayout = new VBox(10, listUsersLabel, ArticleListView, backButton);
+            Scene listUsersScene = new Scene(listUsersLayout, 300, 300);
+
+            primaryStage.setScene(listUsersScene);
+            primaryStage.show();
+        }
+    }
+
+    private void showViewArticlePage(Stage primaryStage,String articleId) {
         // create a label and text field for showing article title
         Label titleLabel = new Label("Title:");
         TextField titleField = new TextField();
@@ -620,12 +666,13 @@ public class LoginPage extends Application {
         contentArea.setWrapText(true);
 
         //replace these with actual database calls to load real article data
-        titleField.setText("Sample Article Title");
-        levelField.setText("Beginner");
-        descriptionArea.setText("This is a sample article description.");
-        keywordsField.setText("Java, JavaFX, Tutorial");
-        linksArea.setText("https://example.com/resource1\nhttps://example.com/resource2");
-        contentArea.setText("This is the content of the article, providing detailed information on the topic.");
+        String[] data = ArticleDatabase.returnArticle(articleId);
+        titleField.setText(data[2]);
+        descriptionArea.setText(data[3]);
+        levelField.setText(data[4]);
+        keywordsField.setText(data[7]);
+        linksArea.setText(data[8]);
+        contentArea.setText("");
 
         // create a Back button
         Button backButton = new Button("Back");
@@ -651,7 +698,7 @@ public class LoginPage extends Application {
         Button deleteArticle = new Button("Delete Article");
         Button backButton = new Button("Back");
 
-        TextArea errorArea = new TextArea();
+        Label errorArea = new Label();
 
         deleteArticle.setOnAction(e -> {
             if (deleteArticleField.getText().isEmpty()) {
@@ -660,8 +707,9 @@ public class LoginPage extends Application {
                 ArticleDatabase.callDeleteArticleByKey(deleteArticleField.getText());
                 errorArea.setText("Successfully deleted.");
             }
-
         });
+
+        backButton.setOnAction(e -> { start(primaryStage); });
         VBox newUserLayout = new VBox(10,deleteArticleLabel,deleteArticleField,deleteArticle,backButton,errorArea);
         Scene newUserScene = new Scene(newUserLayout, 300, 300);
 
@@ -709,7 +757,7 @@ public class LoginPage extends Application {
 
         // back button
         Button backButton = new Button("Back");
-        backButton.setOnAction(e -> showInstructorPage(primaryStage));
+        backButton.setOnAction(e -> start(primaryStage));
         // layout
         VBox editArticleLayout = new VBox(10, editArticleLabel, articleIdField, loadButton, titleField, contentArea, saveButton, backButton);
         editArticleLayout.setPadding(new Insets(10)); // Add padding around the layout

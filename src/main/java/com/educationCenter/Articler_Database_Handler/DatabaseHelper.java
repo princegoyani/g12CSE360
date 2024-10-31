@@ -1,6 +1,9 @@
 package com.educationCenter.Articler_Database_Handler;
 import java.sql.*; import java.sql.Connection; import java.sql.DriverManager;
-import java.sql.SQLException; import java.sql.Statement; import java.util.Base64;
+import java.sql.SQLException; import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 
 import org.h2.tools.Backup;
 import org.h2.tools.Restore;
@@ -296,8 +299,99 @@ class DatabaseHelper {
 //			Arrays.fill(decryptedTitle, '0'); Arrays.fill(decryptedAuthor, '0');
 //			Arrays.fill(decryptedKeywords, '0'); Arrays.fill(decryptedReferences, '0');
 		}
-	}	
+	}
+		public String[][] returnListArticles() throws Exception{
+			if (isDatabaseEmpty() == true) { System.out.println("There are no articles in the database."); return null; }
+			String sql = "SELECT * FROM cse360articles";
+			Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
+			List<String[]> ArticleList = new ArrayList<>();
 
+			while(rs.next()) {
+				int id  = rs.getInt("id");
+				// Decryption occurs before displaying data to the user.
+				String encryptedTitle = rs.getString("title"); String encryptedAuthor = rs.getString("author");
+				Long creationID = rs.getLong("creationID");
+
+				char[] decryptedTitle = EncryptionUtils.toCharArray(
+						encryptionHelper.decrypt( Base64.getDecoder().decode( encryptedTitle ),
+								EncryptionUtils.getInitializationVector("title".toCharArray()) ) );
+				char[] decryptedAuthor = EncryptionUtils.toCharArray(
+						encryptionHelper.decrypt( Base64.getDecoder().decode( encryptedAuthor ),
+								EncryptionUtils.getInitializationVector("author".toCharArray()) ) );
+
+				// Decryption finished, data can now be displayed.
+				if (id < 10) System.out.print("Sequence Number:  " + id);
+				else System.out.print("Sequence Number: " + id);
+				//
+				System.out.printf(". UniqueID: %d", creationID);
+
+				String difficulty = "undefined";
+
+				if (rs.getInt("difficulty") < 1 || rs.getInt("difficulty") > 4) {
+					difficulty = "Undefined";
+				} else if (rs.getInt("difficulty") == 1) {
+					difficulty = "Beginner";
+				} else if (rs.getInt("difficulty") == 2) {
+					difficulty = "Intermediate";
+				} else if (rs.getInt("difficulty") == 3) {
+					difficulty = "Advanced";
+				} else if (rs.getInt("difficulty") == 4) {
+					difficulty = "Expert";
+				}
+				System.out.printf(". Difficulty Level: %s", difficulty);
+				String title;
+				String author;
+				String abstrac;
+				String accessKey;
+				//
+				if ( !rs.getString("nonSensKey").equals("0") ) { // if sensitive
+					System.out.print(". Sensitive?: Yes");
+					title= rs.getString("nonSensTitle");
+					System.out.printf(". Non-Sensitive Title: %s", title );
+					author = new String(decryptedAuthor);
+					System.out.print(". Author: "); EncryptionUtils.printCharArray(decryptedAuthor);
+					abstrac = rs.getString("nonSensAbstrac");
+					System.out.printf(". Non-Sens Abstract: %s",  abstrac);
+					accessKey =rs.getString("nonSensKey");
+					System.out.printf(". Non-Sensitive Access-Key: %s", accessKey );
+				} else {
+					System.out.print(". Sensitive?:  No");
+					title = new String(decryptedTitle);
+					System.out.print(". Title: " + title);
+					author = new String(decryptedAuthor);
+					System.out.print(". Author: " + author);
+					char[] decryptedAbstrac = EncryptionUtils.toCharArray(
+							encryptionHelper.decrypt( Base64.getDecoder().decode( rs.getString("abstrac") ),
+									EncryptionUtils.getInitializationVector("abstrac".toCharArray()) ) );
+					abstrac = new String(decryptedAuthor);
+					System.out.print(". Abstract: "); EncryptionUtils.printCharArray(decryptedAbstrac);
+					accessKey="";
+				}
+				char[] decryptedKeywords = EncryptionUtils.toCharArray(
+						encryptionHelper.decrypt( Base64.getDecoder().decode( rs.getString("keywords") ),
+								EncryptionUtils.getInitializationVector("keywords".toCharArray()) ) );
+				char[] decryptedReferences = EncryptionUtils.toCharArray(
+						encryptionHelper.decrypt( Base64.getDecoder().decode( rs.getString("references") ),
+									EncryptionUtils.getInitializationVector("references".toCharArray()) ) );
+
+				String keywords = new String(decryptedKeywords);
+				String refs = new String(decryptedReferences);
+				String grouping = rs.getString("grouping");
+				System.out.print(". Keywords: "); EncryptionUtils.printCharArray(decryptedKeywords);
+				System.out.print(". References: "); EncryptionUtils.printCharArray(decryptedReferences);
+				System.out.printf(". Groupings: %s.", rs.getString("grouping")); //EncryptionUtils.printCharArray(decryptedReferences);
+				System.out.print("\n");
+				String[] data = {Integer.toString(id),title,author,abstrac,difficulty,accessKey,keywords,refs,grouping};
+				ArticleList.add(data);
+
+//			Arrays.fill(decryptedTitle, '0'); Arrays.fill(decryptedAuthor, '0');
+//			Arrays.fill(decryptedKeywords, '0'); Arrays.fill(decryptedReferences, '0');
+			}
+			String[][] articles = new String[ArticleList.size()][];
+			articles = ArticleList.toArray(articles);
+
+			return articles;
+		}
 	// displayArticleByKey() takes an article's sequence number to display the full article data.
 	public void displayArticleByKey(int key) throws Exception{
 		String sql = "SELECT * FROM cse360articles";
@@ -378,6 +472,91 @@ class DatabaseHelper {
 		} if (articleFound == false) System.out.println("No article was found with that ID.");
 	}	
 	//
+	public String[] returnArticle(int key) throws Exception{
+			String sql = "SELECT * FROM cse360articles";
+			Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
+			Boolean articleFound = false;
+			while( rs.next() ) {
+				int id  = rs.getInt("id");
+				if (id == key) {
+					// display "unique header"
+
+					articleFound = true;
+					String encryptedTitle = rs.getString("title"); String encryptedAuthor = rs.getString("author");
+					String encryptedBody = rs.getString("body"); String encryptedAbstrac = rs.getString("abstrac");
+					String encryptedKeywords = rs.getString("keywords"); String encryptedReferences = rs.getString("references");
+					// Decryption occurs before displaying data to user.
+					char[] decryptedBody = EncryptionUtils.toCharArray(
+							encryptionHelper.decrypt( Base64.getDecoder().decode( encryptedBody ),
+									EncryptionUtils.getInitializationVector("body".toCharArray()) ) );
+					char[] decryptedTitle = EncryptionUtils.toCharArray(
+							encryptionHelper.decrypt( Base64.getDecoder().decode( encryptedTitle ),
+									EncryptionUtils.getInitializationVector("title".toCharArray()) ) );
+					char[] decryptedAuthor = EncryptionUtils.toCharArray(
+							encryptionHelper.decrypt( Base64.getDecoder().decode( encryptedAuthor ),
+									EncryptionUtils.getInitializationVector("author".toCharArray()) ) );
+					char[] decryptedAbstrac = EncryptionUtils.toCharArray(
+							encryptionHelper.decrypt( Base64.getDecoder().decode( encryptedAbstrac ),
+									EncryptionUtils.getInitializationVector("abstrac".toCharArray()) ) );
+					char[] decryptedKeywords = EncryptionUtils.toCharArray(
+							encryptionHelper.decrypt( Base64.getDecoder().decode( encryptedKeywords ),
+									EncryptionUtils.getInitializationVector("keywords".toCharArray()) ) );
+					char[] decryptedReferences = EncryptionUtils.toCharArray(
+							encryptionHelper.decrypt( Base64.getDecoder().decode( encryptedReferences ),
+									EncryptionUtils.getInitializationVector("references".toCharArray()) ) );
+					// Decryption finished, data can now be displayed.
+
+					String difficulty = "undefined";
+					if (rs.getInt("difficulty") < 1 || rs.getInt("difficulty") > 4) {
+						difficulty = "Undefined";
+					} else if (rs.getInt("difficulty") == 1) {
+						difficulty = "Beginner";
+					} else if (rs.getInt("difficulty") == 2) {
+						difficulty = "Intermediate";
+					} else if (rs.getInt("difficulty") == 3) {
+						difficulty = "Advanced";
+					} else if (rs.getInt("difficulty") == 4) {
+						difficulty = "Expert";
+					}
+
+					// unique header : level, grouping IDs, other sens info
+					System.out.print("Unique Header: ");
+					System.out.printf("Difficulty: %d | ", rs.getInt("difficulty") );
+					System.out.printf("Groupings IDs: %s | ", rs.getString("grouping"));
+
+					if ( !rs.getString("nonSensKey").equals("0") ) { // if sensitive
+						System.out.printf("Sensitive?: Yes");
+						System.out.printf(", Non-Sensitive Title: %s", rs.getString("nonSensTitle") );
+						System.out.printf(", Non-Sensitive Abstract: %s", rs.getString("nonSensAbstrac") );
+						System.out.printf(", Non-Sensitive Access-Key: %s", rs.getString("nonSensKey") );
+					} else {
+						System.out.printf("Sensitive?: No");
+					}
+
+					System.out.print("\nSequence Number: " + id);
+					System.out.printf(". Unique ID: %d.", rs.getLong("creationID") );
+					System.out.print("\nTitle: "); EncryptionUtils.printCharArray(decryptedTitle);
+					System.out.print(".\nAuthor(s): "); EncryptionUtils.printCharArray(decryptedAuthor);
+					System.out.print(".\nKeywords: "); EncryptionUtils.printCharArray(decryptedKeywords);
+					System.out.print(".\nAbstract: "); EncryptionUtils.printCharArray(decryptedAbstrac);
+					System.out.print(".\nBody: "); EncryptionUtils.printCharArray(decryptedBody);
+					System.out.print(".\nReferences: "); EncryptionUtils.printCharArray(decryptedReferences);
+					System.out.printf(".\nEnd Article %d Data.\n", id);
+					String idS = Integer.toString(id);
+					String creationId = Long.toString(rs.getLong("creationID"));
+					String title = new String(decryptedTitle);
+					String author = new String(decryptedAuthor);
+					String abstrac = new String(decryptedAbstrac);
+					String keywords = new String(decryptedKeywords);
+					String body = new String(decryptedBody);
+					String references = new String(decryptedReferences);
+
+					String[] data =  {idS, creationId, title,body,difficulty, author, abstrac, keywords, references };
+					return data;
+				}
+			} if (articleFound == false) System.out.println("No article was found with that ID.");
+			return null;
+		}
 	//
 	public void displayArticlesByGrouping(String grouping) throws Exception {
 		String sql = "SELECT * FROM cse360articles";

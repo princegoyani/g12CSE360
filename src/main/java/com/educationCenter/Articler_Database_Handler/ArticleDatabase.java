@@ -7,7 +7,8 @@ public class ArticleDatabase {
 	private static final Scanner scanner = new Scanner(System.in);  // Instantiate Scanner.
 	public static void main( String[] args ) throws Exception 		// Main Method: tries connecting to database.
 	{
-
+		connect_dataBase();
+		defaultFlow();
 	}
 
 	public static void connect_dataBase(){
@@ -186,9 +187,27 @@ public class ArticleDatabase {
 		public static void callDisplayArticles() throws Exception {
 			databaseHelper.displayArticles();
 		}
+		public static String[][] returnListArticles() {
+
+			try {
+                return databaseHelper.returnListArticles();
+            }catch(Exception e) {
+			System.out.println(e.getMessage());
+			}
+			return null;
+		}
 		public static void callDisplayArticleByKey(String input) throws Exception {
 			int key = Integer.parseInt(input); databaseHelper.displayArticleByKey(key);
 			// DOESNT DO USER KEY match ARTICLE KEY checks ; just displays all data
+		}
+		public static String[] returnArticle(String id ){
+		try{
+			int key = Integer.parseInt(id);
+			return databaseHelper.returnArticle(key);
+		}catch (Exception e){
+			System.out.println(e.getMessage());
+		}
+		return null;
 		}
 		public static void callDisplayArticleByGroups(String searchGroupings) throws Exception {
 			databaseHelper.displayArticlesByGrouping(searchGroupings);
