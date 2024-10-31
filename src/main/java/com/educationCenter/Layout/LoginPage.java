@@ -648,7 +648,52 @@ public class LoginPage extends Application {
     }
 
     private void showEditArticlePage(Stage primaryStage) {
+        Label editArticleLabel = new Label("Edit Article");
 
+        //enter the article ID or select from a list
+        TextField articleIdField = new TextField();
+        articleIdField.setPromptText("Enter Article ID");
+
+        // article title and content
+        TextField titleField = new TextField();
+        titleField.setPromptText("Enter Article Title");
+        TextArea contentArea = new TextArea();
+        contentArea.setPromptText("Edit Article Content");
+        contentArea.setWrapText(true);
+
+        // button to load the existing article by ID
+        Button loadButton = new Button("Load Article");
+        loadButton.setOnAction(e -> {
+            titleField.setText("Sample Title");
+            contentArea.setText("Sample content of the article...");
+        });
+
+        //button to save edits
+        Button saveButton = new Button("Save Changes");
+        saveButton.setOnAction(e -> {
+            String articleId = articleIdField.getText();
+            String title = titleField.getText();
+            String content = contentArea.getText();
+
+            // fields are not empty checker
+            if (articleId.isEmpty() || title.isEmpty() || content.isEmpty()) {
+                System.out.println("Please fill in all fields before saving.");
+            } else {
+                // Logic to update the article in the database
+                System.out.println("Article with ID " + articleId + " updated successfully.");
+            }
+        });
+
+        // back button
+        Button backButton = new Button("Back");
+        backButton.setOnAction(e -> showInstructorPage(primaryStage));
+        // layout
+        VBox editArticleLayout = new VBox(10, editArticleLabel, articleIdField, loadButton, titleField, contentArea, saveButton, backButton);
+        editArticleLayout.setPadding(new Insets(10)); // Add padding around the layout
+        //scene and display
+        Scene editArticleScene = new Scene(editArticleLayout, 400, 400);
+        primaryStage.setScene(editArticleScene);
+        primaryStage.show();
     }
 
     private void showCreateArticlePage(Stage primaryStage) {
