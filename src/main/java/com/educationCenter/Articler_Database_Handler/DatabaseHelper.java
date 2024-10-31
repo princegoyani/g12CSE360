@@ -136,6 +136,19 @@ class DatabaseHelper {
 	// createArticle - not sensitive - sensitive fields blank
 	public void createArticle(String title, String body, String author, String abstrac, String keywords, String references, String difficulty, String grouping) throws Exception {
 		// User input for each field is encrypted using EncryptionHelper.
+		int difficultyLevel;
+		if ("Beginner".equals(difficulty)) {
+			difficultyLevel = 1;
+		} else if ("Intermediate".equals(difficulty)) {
+			difficultyLevel = 2;
+		} else if ("Advanced".equals(difficulty)) {
+			difficultyLevel = 3;
+		} else if ("Expert".equals(difficulty)) {
+			difficultyLevel = 4;
+		} else {
+			difficultyLevel = 0; // Undefined or invalid difficulty
+		}
+
 		String encryptedBody = Base64.getEncoder().encodeToString(
 				encryptionHelper.encrypt(body.getBytes(), EncryptionUtils.getInitializationVector("body".toCharArray())) );
 		String encryptedTitle = Base64.getEncoder().encodeToString(
@@ -149,12 +162,12 @@ class DatabaseHelper {
 		String encryptedReferences = Base64.getEncoder().encodeToString(
 				encryptionHelper.encrypt(references.getBytes(), EncryptionUtils.getInitializationVector("references".toCharArray())) );
 		// This now encrypted data is entered into the database as a new article.
-		String insertUser = "INSERT INTO cse360articles (title, body, author, abstrac, keywords, references, difficulty, grouping) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+		String insertUser = "INSERT INTO cse360articles (title, body, author, abstrac, keywords, references,difficulty, grouping) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 		try (PreparedStatement pstmt = connection.prepareStatement(insertUser, Statement.RETURN_GENERATED_KEYS)) {
 			pstmt.setString(1, encryptedTitle); pstmt.setString(2, encryptedBody);
 			pstmt.setString(3, encryptedAuthor); pstmt.setString(4, encryptedAbstrac);
 			pstmt.setString(5, encryptedKeywords); pstmt.setString(6, encryptedReferences);
-			pstmt.setInt(7, Integer.parseInt(difficulty) ); // DIFFICULTY LEVEL INT: 1-4
+			pstmt.setInt(7, difficultyLevel ); // DIFFICULTY LEVEL INT: 1-4
 			pstmt.setString(8, grouping);
 			// Execute insert
 			int affectedRows = pstmt.executeUpdate();
@@ -182,6 +195,18 @@ class DatabaseHelper {
 
 	// createArticle - sensitive - sensitive fields populated
 	public void createArticle(String title, String body, String author, String abstrac, String keywords, String references, String difficulty, String grouping, String nonSensTitle, String nonSensAbstrac, String sensKey) throws Exception {
+		int difficultyLevel;
+		if ("Beginner".equals(difficulty)) {
+			difficultyLevel = 1;
+		} else if ("Intermediate".equals(difficulty)) {
+			difficultyLevel = 2;
+		} else if ("Advanced".equals(difficulty)) {
+			difficultyLevel = 3;
+		} else if ("Expert".equals(difficulty)) {
+			difficultyLevel = 4;
+		} else {
+			difficultyLevel = 0; // Undefined or invalid difficulty
+		}
 		String encryptedBody = Base64.getEncoder().encodeToString(
 				encryptionHelper.encrypt(body.getBytes(), EncryptionUtils.getInitializationVector("body".toCharArray())) );
 		String encryptedTitle = Base64.getEncoder().encodeToString(
@@ -205,7 +230,7 @@ class DatabaseHelper {
 			pstmt.setString(1, encryptedTitle); pstmt.setString(2, encryptedBody);
 			pstmt.setString(3, encryptedAuthor); pstmt.setString(4, encryptedAbstrac);
 			pstmt.setString(5, encryptedKeywords); pstmt.setString(6, encryptedReferences);
-			pstmt.setInt(7, Integer.parseInt(difficulty) ); // set difficulty
+			pstmt.setInt(7, difficultyLevel ); // set difficulty
 			pstmt.setString(8, grouping); //grouping
 			pstmt.setString(9, nonSensTitle); // NON-SENS FIELDS -> NOT ENCRYPTED YET
 			pstmt.setString(10, nonSensAbstrac);
@@ -670,42 +695,25 @@ class DatabaseHelper {
 	}
 
 	// editArticleByKey() EDIT ARTICLE BY KEY (admin + instructor function)
-	public void editArticleByKey(int key, String newTitle, String newBody, String newAuthor, String newAbstrac, String newKeywords, String newReferences, String newDifficulty, String newGrouping) throws Exception {
-		String selectSql = "SELECT * FROM cse360articles WHERE id = ?";
+	public void editArticleByKey(int key, String newTitle, String newBody) throws Exception {
+		String selectSql = "SELECT title,body FROM cse360articles WHERE id = ?";
 		boolean articleFound = false;
 		try (PreparedStatement selectStmt = connection.prepareStatement(selectSql)) {
 			selectStmt.setInt(1, key);
 			ResultSet rs = selectStmt.executeQuery();
 			if (rs.next()) {
 				articleFound = true;
-				String updateSql = "UPDATE cse360articles SET title = ?, body = ?, author = ?, abstrac = ?, keywords = ?, references = ?, difficulty = ?, grouping = ?, nonSensKey = ?, nonSensTitle = ?, nonSensAbstrac = ? WHERE id = ?";
+				String updateSql = "UPDATE cse360articles SET title = ?, body = ? WHERE id = ?";
 
 				String encryptedBody = Base64.getEncoder().encodeToString(
 						encryptionHelper.encrypt(newBody.getBytes(), EncryptionUtils.getInitializationVector("body".toCharArray())) );
 				String encryptedTitle = Base64.getEncoder().encodeToString(
 						encryptionHelper.encrypt(newTitle.getBytes(), EncryptionUtils.getInitializationVector("title".toCharArray())) );
-				String encryptedAuthor = Base64.getEncoder().encodeToString(
-						encryptionHelper.encrypt(newAuthor.getBytes(), EncryptionUtils.getInitializationVector("author".toCharArray())) );
-				String encryptedAbstrac = Base64.getEncoder().encodeToString(
-						encryptionHelper.encrypt(newAbstrac.getBytes(), EncryptionUtils.getInitializationVector("abstrac".toCharArray())) );
-				String encryptedKeywords = Base64.getEncoder().encodeToString(
-						encryptionHelper.encrypt(newKeywords.getBytes(), EncryptionUtils.getInitializationVector("keywords".toCharArray())) );
-				String encryptedReferences = Base64.getEncoder().encodeToString(
-						encryptionHelper.encrypt(newReferences.getBytes(), EncryptionUtils.getInitializationVector("references".toCharArray())) );
 
 				try (PreparedStatement pstmt = connection.prepareStatement(updateSql)) {
 					pstmt.setString(1, encryptedTitle);
 					pstmt.setString(2, encryptedBody);
-					pstmt.setString(3, encryptedAuthor);
-					pstmt.setString(4, encryptedAbstrac);
-					pstmt.setString(5, encryptedKeywords);
-					pstmt.setString(6, encryptedReferences);
-					pstmt.setString(7, newDifficulty);
-					pstmt.setString(8, newGrouping);
-					pstmt.setString(9, "0"); // String newNonSensKey = "0";    SET TO DEFAULTS
-					pstmt.setString(10, "0"); // String newNonSensAbstrac = "0";
-					pstmt.setString(11, "0"); // String newNonSensAbstrac = "0";
-					pstmt.setInt(12, key); // Article ID
+					pstmt.setInt(3, key); // Article ID
 					int rowsAffected = pstmt.executeUpdate();
 					if (rowsAffected > 0) {
 						System.out.println("Article with ID " + key + " has been updated successfully.");

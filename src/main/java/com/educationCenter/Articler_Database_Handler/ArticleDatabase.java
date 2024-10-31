@@ -129,7 +129,7 @@ public class ArticleDatabase {
 						String newSens = scanner.nextLine();
 						if ( newSens.equals("Y") || newSens.equals("y")  ) {
 							// call non-sens edit method
-							databaseHelper.editArticleByKey(editKey, editTitle, editBody, editAuthor, editAbstrac, editKeywords, editReferences, editDifficulty, editGrouping);
+							//databaseHelper.editArticleByKey(editKey, editTitle, editBody, editAuthor, editAbstrac, editKeywords, editReferences, editDifficulty, editGrouping);
 						} else {
 							// call sens edit method - get sens values
 							System.out.print("Non-Sensitive Access-Key: "); String editNonSensKey = scanner.nextLine();
@@ -148,7 +148,7 @@ public class ArticleDatabase {
 							databaseHelper.editArticleByKeySens(editKey, editTitle, editBody, editAuthor, editAbstrac, editKeywords, editReferences, editDifficulty, editGrouping, editNonSensKey, editNonSensTitle, editNonSensAbstrac);
 						} else {
 							// call non-sens edit method - cleared any sens fields
-							databaseHelper.editArticleByKey(editKey, editTitle, editBody, editAuthor, editAbstrac, editKeywords, editReferences, editDifficulty, editGrouping);
+							//databaseHelper.editArticleByKey(editKey, editTitle, editBody, editAuthor, editAbstrac, editKeywords, editReferences, editDifficulty, editGrouping);
 						}
 					}
 				}
@@ -227,14 +227,20 @@ public class ArticleDatabase {
 		public static void callCreateArticle(String newTitle, String newBody, String newAuthor, String newAbstrac, String newKeywords, String newReferences, String newDifficulty, String newGrouping, String nonSensTitle, String nonSensAbstrac, String sensKey) throws Exception {
 			databaseHelper.createArticle(newTitle, newBody, newAuthor, newAbstrac, newKeywords, newReferences, newDifficulty, newGrouping, nonSensTitle, nonSensAbstrac, sensKey);
 		}  // Create Sensitive Article
-		public static void callEditArticle(String key, String editTitle, String editBody, String editAuthor, String editAbstrac, String editKeywords, String editReferences, String editDifficulty, String editGrouping) throws Exception {
+		public static void callEditArticle(String key, String editTitle, String editBody){
 			int editKey = Integer.parseInt(key);
-			databaseHelper.editArticleByKey(editKey, editTitle, editBody, editAuthor, editAbstrac, editKeywords, editReferences, editDifficulty, editGrouping);
-		} // Edit Article As New Non-Sensitive Article
-		public static void callEditArticle(String key, String editTitle, String editBody, String editAuthor, String editAbstrac, String editKeywords, String editReferences, String editDifficulty, String editGrouping, String editNonSensKey, String editNonSensTitle, String editNonSensAbstrac) throws Exception {
-			int editKey = Integer.parseInt(key);
-			databaseHelper.editArticleByKeySens(editKey, editTitle, editBody, editAuthor, editAbstrac, editKeywords, editReferences, editDifficulty, editGrouping, editNonSensKey, editNonSensTitle, editNonSensAbstrac);
-		} // Edit Article As New Sensitive Article
+			try {
+				databaseHelper.editArticleByKey(editKey, editTitle, editBody);
+			}catch (Exception e) {System.out.println(e);}
+		}
+//		public static void callEditArticle(String key, String editTitle, String editBody, String editAuthor, String editAbstrac, String editKeywords, String editReferences, String editDifficulty, String editGrouping) throws Exception {
+//			int editKey = Integer.parseInt(key);
+//			databaseHelper.editArticleByKey(editKey, editTitle, editBody, editAuthor, editAbstrac, editKeywords, editReferences, editDifficulty, editGrouping);
+//		} // Edit Article As New Non-Sensitive Article
+//		public static void callEditArticle(String key, String editTitle, String editBody, String editAuthor, String editAbstrac, String editKeywords, String editReferences, String editDifficulty, String editGrouping, String editNonSensKey, String editNonSensTitle, String editNonSensAbstrac) throws Exception {
+//			int editKey = Integer.parseInt(key);
+//			databaseHelper.editArticleByKeySens(editKey, editTitle, editBody, editAuthor, editAbstrac, editKeywords, editReferences, editDifficulty, editGrouping, editNonSensKey, editNonSensTitle, editNonSensAbstrac);
+//		} // Edit Article As New Sensitive Article
 
 		public static void callBackupFile(String backupFilename) throws Exception {
 			//  backup filename without file extension e.g. "backup1"

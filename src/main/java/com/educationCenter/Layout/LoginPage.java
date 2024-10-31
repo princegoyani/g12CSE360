@@ -564,11 +564,11 @@ public class LoginPage extends Application {
         });
 
         editArticle.setOnAction(e -> {
-            showEditArticlePage(primaryStage);
+            showlistArticlePage(primaryStage,"edit");;
         });
 
         viewArticle.setOnAction(e -> {
-            showlistArticlePage(primaryStage);
+            showlistArticlePage(primaryStage,"view");
         });
 
         deleteArticle.setOnAction(e -> {
@@ -596,7 +596,7 @@ public class LoginPage extends Application {
         primaryStage.show();
 
     }
-    private void showlistArticlePage(Stage primaryStage) {
+    private void showlistArticlePage(Stage primaryStage,String Action) {
         Label listUsersLabel = new Label("List of Articles:");
         Button backButton = new Button("Back");
 
@@ -619,7 +619,11 @@ public class LoginPage extends Application {
                 if (selectedArticle != null) {
                     String userId = selectedArticle.split(" ")[0];  // Assuming ID is the first element
                     System.out.println(userId);
-                    showViewArticlePage(primaryStage, userId);
+                    if (Action.equals("view")) {
+                        showViewArticlePage(primaryStage, userId);
+                    }else if (Action.equals("edit")) {
+                        showEditArticlePage(primaryStage, userId);
+                    }
                 }
             });
 
@@ -720,12 +724,9 @@ public class LoginPage extends Application {
 
     }
 
-    private void showEditArticlePage(Stage primaryStage) {
-        Label editArticleLabel = new Label("Edit Article");
+    private void showEditArticlePage(Stage primaryStage,String EditId) {
 
-        //enter the article ID or select from a list
-        TextField articleIdField = new TextField();
-        articleIdField.setPromptText("Enter Article ID");
+        Label editArticleLabel = new Label("Edit Article");
 
         // article title and content
         TextField titleField = new TextField();
@@ -735,16 +736,14 @@ public class LoginPage extends Application {
         contentArea.setWrapText(true);
 
         // button to load the existing article by ID
-        Button loadButton = new Button("Load Article");
-        loadButton.setOnAction(e -> {
-            titleField.setText("Sample Title");
-            contentArea.setText("Sample content of the article...");
-        });
+        String[] data = ArticleDatabase.returnArticle(EditId);
+        titleField.setText(data[2]);
+        contentArea.setText(data[3]);
 
         //button to save edits
         Button saveButton = new Button("Save Changes");
         saveButton.setOnAction(e -> {
-            String articleId = articleIdField.getText();
+            String articleId = EditId;
             String title = titleField.getText();
             String content = contentArea.getText();
 
@@ -753,6 +752,7 @@ public class LoginPage extends Application {
                 System.out.println("Please fill in all fields before saving.");
             } else {
                 // Logic to update the article in the database
+                ArticleDatabase.callEditArticle(articleId, title, content);
                 System.out.println("Article with ID " + articleId + " updated successfully.");
             }
         });
@@ -761,7 +761,7 @@ public class LoginPage extends Application {
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> start(primaryStage));
         // layout
-        VBox editArticleLayout = new VBox(10, editArticleLabel, articleIdField, loadButton, titleField, contentArea, saveButton, backButton);
+        VBox editArticleLayout = new VBox(10, editArticleLabel, titleField, contentArea, saveButton, backButton);
         editArticleLayout.setPadding(new Insets(10)); // Add padding around the layout
         //scene and display
         Scene editArticleScene = new Scene(editArticleLayout, 400, 400);
@@ -793,7 +793,7 @@ public class LoginPage extends Application {
         referencesField.setPromptText("Enter References");
 
         ComboBox<String> difficultyComboBox = new ComboBox<>();
-        difficultyComboBox.getItems().addAll("Beginner", "Intermediate", "Expert");
+        difficultyComboBox.getItems().addAll("Beginner", "Intermediate","Advanced" ,"Expert");
         difficultyComboBox.setPromptText("Select Difficulty");
 
         TextField groupingField = new TextField();
@@ -853,7 +853,7 @@ public class LoginPage extends Application {
                     }
 
                     // Call sensitive article creation method in App
-                    ArticleDatabase.callCreateArticle(title, content, author, abstrac, keywords, references, difficulty, grouping, nonSensTitle, nonSensAbstrac, sensKey);
+                    ArticleDatabase.callCreateArticle(title, content, author, abstrac, keywords, references,difficulty, grouping, nonSensTitle, nonSensAbstrac, sensKey);
                     System.out.println("Sensitive article created successfully.");
                 } else {
                     // Call non-sensitive article creation method in App
@@ -861,7 +861,7 @@ public class LoginPage extends Application {
                     System.out.println("Non-sensitive article created successfully.");
                 }
             } catch (Exception ex) {
-                System.out.println("Error creating article: " + ex.getMessage());
+                System.out.println(ex);
             }
         });
 
