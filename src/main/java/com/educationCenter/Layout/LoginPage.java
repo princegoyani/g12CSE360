@@ -557,11 +557,8 @@ public class LoginPage extends Application {
         Button deleteArticle = new Button("Delete Article");
         Button logoutButton = new Button("Logout");
 
-        // New buttons for backup and load options
-        Button backupEverythingButton = new Button("Backup Everything");
-        Button backupGroupButton = new Button("Backup Certain Group");
-        Button loadReplaceDatabaseButton = new Button("Load/Replace Database");
-        Button loadMergeDatabaseButton = new Button("Load/Merge Database");
+        // New button to navigate to the Backup/Restore page
+        Button backupRestoreButton = new Button("Backup/Restore");
 
         // Set actions for the existing buttons
         createArticle.setOnAction(e -> showCreateArticlePage(primaryStage));
@@ -573,36 +570,76 @@ public class LoginPage extends Application {
             start(primaryStage);
         });
 
-        // Set actions for the new backup and load buttons
+        // Set action to navigate to the Backup/Restore page
+        backupRestoreButton.setOnAction(e -> showBackupRestorePage(primaryStage));
 
-        // Backup everything button
+        // Layout for the Instructor Homepage
+        VBox instructorLayout = new VBox(10, createArticle, viewArticle, editArticle, deleteArticle,
+                backupRestoreButton, logoutButton);
+        Scene instructorScene = new Scene(instructorLayout, 300, 300);
+
+        primaryStage.setScene(instructorScene);
+        primaryStage.show();
+    }
+
+    private void showlistArticlePage(Stage primaryStage, String edit) {
+    }
+
+    // New method for the Backup/Restore page
+    private void showBackupRestorePage(Stage primaryStage) {
+        // Text field for entering the file name
+        Label fileNameLabel = new Label("Enter File Name:");
+        TextField fileNameInput = new TextField();
+        fileNameInput.setPromptText("Enter backup file name here");
+
+        // Backup and load buttons
+        Button backupEverythingButton = new Button("Backup Everything");
+        Button backupGroupButton = new Button("Backup Certain Group");
+        Button loadReplaceDatabaseButton = new Button("Load/Replace Database");
+        Button loadMergeDatabaseButton = new Button("Load/Merge Database");
+        Button backButton = new Button("Back");
+
+        // Action for the back button to return to the Instructor Page
+        backButton.setOnAction(e -> showInstructorPage(primaryStage));
+
+        // Backup everything button using the file name from input
         backupEverythingButton.setOnAction(e -> {
-            try {
-                ArticleDatabase.backupToFile("full_backup");
-                System.out.println("Backup of the entire database created successfully.");
-            } catch (Exception ex) {
-                System.out.println("Error during full database backup: " + ex.getMessage());
+            String fileName = fileNameInput.getText();
+            if (fileName.isEmpty()) {
+                System.out.println("Please enter a file name for backup.");
+            } else {
+                try {
+                    ArticleDatabase.callBackupFile(fileName);
+                    System.out.println("Backup of the entire database created with filename: " + fileName);
+                } catch (Exception ex) {
+                    System.out.println("Error during full database backup: " + ex.getMessage());
+                }
             }
         });
 
-        // Backup only a certain group button
+        // Backup only a certain group button with group ID prompt and file name input
         backupGroupButton.setOnAction(e -> {
-            TextInputDialog dialog = new TextInputDialog();
-            dialog.setTitle("Backup Certain Group");
-            dialog.setHeaderText("Enter the group ID(s) to backup:");
-            dialog.setContentText("Group ID(s):");
+            String fileName = fileNameInput.getText();
+            if (fileName.isEmpty()) {
+                System.out.println("Please enter a file name for backup.");
+            } else {
+                TextInputDialog groupDialog = new TextInputDialog();
+                groupDialog.setTitle("Backup Certain Group");
+                groupDialog.setHeaderText("Enter the group ID(s) to backup:");
+                groupDialog.setContentText("Group ID(s):");
 
-            dialog.showAndWait().ifPresent(groupIds -> {
-                try {
-                    ArticleDatabase.backupToFile("group_backup", groupIds);
-                    System.out.println("Backup of group(s) " + groupIds + " created successfully.");
-                } catch (Exception ex) {
-                    System.out.println("Error during group backup: " + ex.getMessage());
-                }
-            });
+                groupDialog.showAndWait().ifPresent(groupIds -> {
+                    try {
+                        ArticleDatabase.callBackupFile(fileName + "_" + groupIds);
+                        System.out.println("Backup of group(s) " + groupIds + " created with filename: " + fileName);
+                    } catch (Exception ex) {
+                        System.out.println("Error during group backup: " + ex.getMessage());
+                    }
+                });
+            }
         });
 
-        // Load/Replace database button
+        // Load/Replace database button with file chooser
         loadReplaceDatabaseButton.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Select Database Backup to Load/Replace");
@@ -610,7 +647,7 @@ public class LoginPage extends Application {
 
             if (selectedFile != null) {
                 try {
-                    ArticleDatabase.loadFromFile(selectedFile.getAbsolutePath(), true);  // Replace mode
+                    ArticleDatabase.callLoadFile(selectedFile.getAbsolutePath(), true);  // Replace mode
                     System.out.println("Database replaced with backup from " + selectedFile.getName());
                 } catch (Exception ex) {
                     System.out.println("Error during database replace: " + ex.getMessage());
@@ -618,7 +655,7 @@ public class LoginPage extends Application {
             }
         });
 
-        // Load/Merge database button
+        // Load/Merge database button with file chooser
         loadMergeDatabaseButton.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Select Database Backup to Load/Merge");
@@ -626,7 +663,7 @@ public class LoginPage extends Application {
 
             if (selectedFile != null) {
                 try {
-                    ArticleDatabase.loadFromFile(selectedFile.getAbsolutePath(), false);  // Merge mode
+                    ArticleDatabase.callLoadFile(selectedFile.getAbsolutePath(), false);  // Merge mode
                     System.out.println("Database merged with backup from " + selectedFile.getName());
                 } catch (Exception ex) {
                     System.out.println("Error during database merge: " + ex.getMessage());
@@ -634,56 +671,15 @@ public class LoginPage extends Application {
             }
         });
 
-        // Layout for the Instructor Homepage
-        VBox instructorLayout = new VBox(10, createArticle, viewArticle, editArticle, deleteArticle,
-                backupEverythingButton, backupGroupButton,
-                loadReplaceDatabaseButton, loadMergeDatabaseButton, logoutButton);
-        Scene instructorScene = new Scene(instructorLayout, 300, 400);
+        // Layout for the Backup/Restore page with file name input
+        VBox backupRestoreLayout = new VBox(10, fileNameLabel, fileNameInput, backupEverythingButton, backupGroupButton,
+                loadReplaceDatabaseButton, loadMergeDatabaseButton, backButton);
+        Scene backupRestoreScene = new Scene(backupRestoreLayout, 300, 400);
 
-        primaryStage.setScene(instructorScene);
+        primaryStage.setScene(backupRestoreScene);
         primaryStage.show();
     }
 
-    private void showlistArticlePage(Stage primaryStage,String Action) {
-        Label listUsersLabel = new Label("List of Articles:");
-        Button backButton = new Button("Back");
-
-        ListView<String> ArticleListView = new ListView<>();
-        String[][] datas = ArticleDatabase.returnListArticles();
-        if (datas != null) {
-            System.out.println(datas);
-            for (String[] data : datas) {
-                StringBuilder userData = new StringBuilder(data[0]);  // Start with user ID
-                for (int j = 1; j < data.length; j++) {
-                    userData.append(" ").append(data[j]);
-                }
-                ArticleListView.getItems().add(userData.toString());
-            }
-
-            // Handle click events on the user list items
-            ArticleListView.setOnMouseClicked(event -> {
-                String selectedArticle = ArticleListView.getSelectionModel().getSelectedItem();
-                System.out.println(selectedArticle);
-                if (selectedArticle != null) {
-                    String userId = selectedArticle.split(" ")[0];  // Assuming ID is the first element
-                    System.out.println(userId);
-                    if (Action.equals("view")) {
-                        showViewArticlePage(primaryStage, userId);
-                    }else if (Action.equals("edit")) {
-                        showEditArticlePage(primaryStage, userId);
-                    }
-                }
-            });
-
-            backButton.setOnAction(e -> start(primaryStage));
-
-            VBox listUsersLayout = new VBox(10, listUsersLabel, ArticleListView, backButton);
-            Scene listUsersScene = new Scene(listUsersLayout, 300, 300);
-
-            primaryStage.setScene(listUsersScene);
-            primaryStage.show();
-        }
-    }
 
     private void showViewArticlePage(Stage primaryStage,String articleId) {
         // create a label and text field for showing article title

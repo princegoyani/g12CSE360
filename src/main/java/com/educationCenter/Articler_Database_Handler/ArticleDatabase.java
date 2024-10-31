@@ -271,4 +271,10 @@ public class ArticleDatabase {
 
 	public static void backupToFile(String groupBackup, String groupIds) {
 	}
+
+	public static void callBackupFile(String s, String groupIds) {
+	}
+
+	public static void callLoadFile(String absolutePath, boolean b) {
+	}
 }
