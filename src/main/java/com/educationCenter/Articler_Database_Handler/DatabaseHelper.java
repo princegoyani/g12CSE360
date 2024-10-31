@@ -34,7 +34,7 @@ import com.educationCenter.Encryption.EncryptionHelper; import com.educationCent
 	 */
 class DatabaseHelper {
 	static final String JDBC_DRIVER = "org.h2.Driver";   
-	static final String DB_NAME = "Test2001";
+	static final String DB_NAME = "Test2002";
 	//static final String DB_URL = "jdbc:h2:~/articleDB/" + DB_NAME;
 	//static final String DB_URL = "jdbc:h2:~/" + DB_NAME;
 	static final String DB_URL = "jdbc:h2:file:./database/" + DB_NAME;

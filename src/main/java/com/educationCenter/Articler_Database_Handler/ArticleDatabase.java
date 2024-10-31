@@ -196,8 +196,11 @@ public class ArticleDatabase {
 		public static void callDisplayArticleByKeywords(String searchKeywords) throws Exception {
 			databaseHelper.displayArticlesByKeywords(searchKeywords);
 		}
-		public static void callDeleteArticleByKey(String input) throws Exception {
-			int key = Integer.parseInt(input); databaseHelper.deleteArticleByKey(key);
+		public static void callDeleteArticleByKey(String input){
+		try {
+			int key = Integer.parseInt(input);
+			databaseHelper.deleteArticleByKey(key);
+		}catch (Exception e) {System.out.println(e);}
 		}
 		public static void callCreateArticle(String newTitle, String newBody, String newAuthor, String newAbstrac, String newKeywords, String newReferences, String newDifficulty, String newGrouping) throws Exception {
 			databaseHelper.createArticle(newTitle, newBody, newAuthor, newAbstrac, newKeywords, newReferences, newDifficulty, newGrouping);

@@ -43,7 +43,7 @@ public class LoginPage extends Application {
         // Adding action to the login button
         loginButton.setOnAction(e -> {
             manageLogin(primaryStage,userTextField.getText(),passwordField.getText());
-            });
+        });
 
         // Action for new user button
 
@@ -299,7 +299,7 @@ public class LoginPage extends Application {
         // Confirm button
         Button addRole = new Button("Add Role");
         Button removeRole = new Button("Delete Role");
-            //Hello world
+        //Hello world
         Button backButton = new Button("Back");
 
         // Action for the Confirm Change button
@@ -333,9 +333,9 @@ public class LoginPage extends Application {
         backButton.setOnAction(e -> showAdminHomepage(primaryStage));
 
         // Layout for the Update User Roles scene
-        VBox updateRolesLayout = new VBox(10, updateUserRolesLabel, usernameField, 
-                                          adminRole, instructorRole, studentRole, 
-                                          addRole,removeRole, backButton);
+        VBox updateRolesLayout = new VBox(10, updateUserRolesLabel, usernameField,
+                adminRole, instructorRole, studentRole,
+                addRole,removeRole, backButton);
         Scene updateRolesScene = new Scene(updateRolesLayout, 300, 250);
 
         primaryStage.setScene(updateRolesScene);
@@ -522,8 +522,8 @@ public class LoginPage extends Application {
 
 
         loggout.setOnAction(e -> {
-           App.logout();
-           start(primaryStage);
+            App.logout();
+            start(primaryStage);
         });
 
         VBox newUserLayout = new VBox(10, loggout);
@@ -547,7 +547,7 @@ public class LoginPage extends Application {
 
 
         createArticle.setOnAction(e -> {
-           // showCreateArticlePage(primaryStage);
+            // showCreateArticlePage(primaryStage);
         });
 
         editArticle.setOnAction(e -> {
@@ -628,7 +628,7 @@ public class LoginPage extends Application {
 
         // create a Back button
         Button backButton = new Button("Back");
-        backButton.setOnAction(e -> showInstructorPage(primaryStage));
+        backButton.setOnAction(e -> start(primaryStage));
         //layout for arranging UI components vertically with padding and spacing
         VBox viewArticleLayout = new VBox(10, titleLabel, titleField,
                 levelLabel, levelField,
@@ -645,6 +645,28 @@ public class LoginPage extends Application {
     }
 
     private void showdeleteArticlePage(Stage primaryStage) {
+        Label deleteArticleLabel = new Label("Delete Article Id:");
+        TextField deleteArticleField = new TextField();
+        Button deleteArticle = new Button("Delete Article!");
+        Button backButton = new Button("Back");
+
+        TextArea errorArea = new TextArea();
+
+        deleteArticle.setOnAction(e -> {
+            if (deleteArticleField.getText().isEmpty()) {
+                errorArea.setText("Please enter a valid ID.");
+            }else{
+                ArticleDatabase.callDeleteArticleByKey(deleteArticleField.getText());
+                errorArea.setText("Successfully deleted.");
+            }
+
+        });
+        VBox newUserLayout = new VBox(10,deleteArticleLabel,deleteArticleField,deleteArticle,backButton,errorArea);
+        Scene newUserScene = new Scene(newUserLayout, 300, 300);
+
+        primaryStage.setScene(newUserScene);
+        primaryStage.show();
+
     }
 
     private void showEditArticlePage(Stage primaryStage) {
@@ -697,7 +719,7 @@ public class LoginPage extends Application {
     }
 
     private void showCreateArticlePage(Stage primaryStage) {
-        
+
     }
 
     public static void main(String[] args) {
