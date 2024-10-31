@@ -50,10 +50,11 @@ public class LoginPage extends Application {
 
         Button loginButton = new Button("Login");
         Button inviteCodeButton = new Button("Enter Invite Code");
+        Label statusMessage = new Label("");
 
         // Adding action to the login button
         loginButton.setOnAction(e -> {
-            manageLogin(primaryStage,userTextField.getText(),passwordField.getText());
+            manageLogin(primaryStage,userTextField.getText(),passwordField.getText(), statusMessage);
         });
 
         // Action for new user button
@@ -65,7 +66,7 @@ public class LoginPage extends Application {
         });
 
         // Layout for the login page
-        VBox vbox = new VBox(10, userLabel, userTextField, passwordLabel, passwordField, loginButton, inviteCodeButton);
+        VBox vbox = new VBox(10, userLabel, userTextField, passwordLabel, passwordField, loginButton, inviteCodeButton, statusMessage);
         Scene scene = new Scene(vbox, 300, 250);
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -99,7 +100,7 @@ public class LoginPage extends Application {
             } else {
                 String role = selectedRole.getText().toLowerCase();
                 App.setActiveRole(role);
-                manageLogin(primaryStage,null,null);
+                manageLogin(primaryStage,null,null, null);
             }
         });
 
@@ -117,7 +118,7 @@ public class LoginPage extends Application {
         primaryStage.show();
     }
     // Method to navigate to the Admin Homepage
-    private void manageLogin(Stage primaryStage,String username,String password) {
+    private void manageLogin(Stage primaryStage,String username,String password, Label message) {
 
         switch (App.appLogin(username, password)) {
             case "multi":
@@ -137,6 +138,7 @@ public class LoginPage extends Application {
                 showInstructorPage(primaryStage);
             case "invalidLogin":
                 System.out.println("Invalid username or password.");
+                if(message != null){ message.setText("Invalid username or password.");}
                 break;
         }
 
