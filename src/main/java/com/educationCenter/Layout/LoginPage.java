@@ -7,6 +7,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import com.educationCenter.App;
+import javafx.geometry.Insets;
+
 public class LoginPage extends Application {
     // A list to store created users
     // new comment
@@ -583,12 +585,70 @@ public class LoginPage extends Application {
     }
 
     private void showViewArticlePage(Stage primaryStage) {
+        // create a label and text field for showing article title
+        Label titleLabel = new Label("Title:");
+        TextField titleField = new TextField();
+        titleField.setEditable(false); //set non-editable
+
+        //create label and text field for article's difficulty level
+        Label levelLabel = new Label("Difficulty Level:");
+        TextField levelField = new TextField();
+        levelField.setEditable(false); //set non-editable
+
+        // create label and text area for article's description
+        Label descriptionLabel = new Label("Description:");
+        TextArea descriptionArea = new TextArea();
+        descriptionArea.setEditable(false); //set non-editable
+        descriptionArea.setWrapText(true);
+
+        //create label and text field for keywords
+        Label keywordsLabel = new Label("Keywords:");
+        TextField keywordsField = new TextField();
+        keywordsField.setEditable(false); //set non-editable
+
+        //create label and text area for reference links
+        Label linksLabel = new Label("Reference Links:");
+        TextArea linksArea = new TextArea();
+        linksArea.setEditable(false); //set non-editable
+        linksArea.setWrapText(true);
+
+        //label and text area for main content of the article
+        Label contentLabel = new Label("Article Content:");
+        TextArea contentArea = new TextArea();
+        contentArea.setEditable(false);
+        contentArea.setWrapText(true);
+
+        //replace these with actual database calls to load real article data
+        titleField.setText("Sample Article Title");
+        levelField.setText("Beginner");
+        descriptionArea.setText("This is a sample article description.");
+        keywordsField.setText("Java, JavaFX, Tutorial");
+        linksArea.setText("https://example.com/resource1\nhttps://example.com/resource2");
+        contentArea.setText("This is the content of the article, providing detailed information on the topic.");
+
+        // create a Back button
+        Button backButton = new Button("Back");
+        backButton.setOnAction(e -> showInstructorPage(primaryStage));
+        //layout for arranging UI components vertically with padding and spacing
+        VBox viewArticleLayout = new VBox(10, titleLabel, titleField,
+                levelLabel, levelField,
+                descriptionLabel, descriptionArea,
+                keywordsLabel, keywordsField,
+                linksLabel, linksArea,
+                contentLabel, contentArea,
+                backButton);
+        viewArticleLayout.setPadding(new Insets(10)); //add padding for layout spacing
+
+        Scene viewArticleScene = new Scene(viewArticleLayout, 400, 600);
+        primaryStage.setScene(viewArticleScene);
+        primaryStage.show(); // Show the scene
     }
 
     private void showdeleteArticlePage(Stage primaryStage) {
     }
 
     private void showEditArticlePage(Stage primaryStage) {
+
     }
 
     private void showCreateArticlePage(Stage primaryStage) {
