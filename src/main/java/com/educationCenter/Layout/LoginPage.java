@@ -8,6 +8,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import com.educationCenter.App;
 import javafx.geometry.Insets;
+import javafx.stage.FileChooser;
+import java.io.File;
 import com.educationCenter.App;
 
 public class LoginPage extends Application {
@@ -548,54 +550,100 @@ public class LoginPage extends Application {
     }
 
     private void showInstructorPage(Stage primaryStage) {
-
-
+        // Existing buttons for the instructor
         Button createArticle = new Button("Create Article");
         Button editArticle = new Button("Edit Article");
         Button viewArticle = new Button("View Article");
         Button deleteArticle = new Button("Delete Article");
-//        Button backup = new Button("Backup Data");
-//        Button restore = new Button("restore Article");
-        Button loggout = new Button("Logout");
+        Button logoutButton = new Button("Logout");
 
+        // New buttons for backup and load options
+        Button backupEverythingButton = new Button("Backup Everything");
+        Button backupGroupButton = new Button("Backup Certain Group");
+        Button loadReplaceDatabaseButton = new Button("Load/Replace Database");
+        Button loadMergeDatabaseButton = new Button("Load/Merge Database");
 
-        createArticle.setOnAction(e -> {
-            showCreateArticlePage(primaryStage);
-        });
-
-        editArticle.setOnAction(e -> {
-            showlistArticlePage(primaryStage,"edit");;
-        });
-
-        viewArticle.setOnAction(e -> {
-            showlistArticlePage(primaryStage,"view");
-        });
-
-        deleteArticle.setOnAction(e -> {
-            showdeleteArticlePage(primaryStage);
-        });
-
-
-//        backupData.setOnAction(e -> {
-//            showbackupArticlePage(primaryStage);
-//        });
-//
-//        restoreData.setOnAction(e -> {
-//            showRestoreArticlePage(primaryStage);
-//        });
-
-        loggout.setOnAction(e -> {
+        // Set actions for the existing buttons
+        createArticle.setOnAction(e -> showCreateArticlePage(primaryStage));
+        editArticle.setOnAction(e -> showlistArticlePage(primaryStage, "edit"));
+        viewArticle.setOnAction(e -> showlistArticlePage(primaryStage, "view"));
+        deleteArticle.setOnAction(e -> showdeleteArticlePage(primaryStage));
+        logoutButton.setOnAction(e -> {
             App.logout();
             start(primaryStage);
         });
 
-        VBox newUserLayout = new VBox(10, createArticle,viewArticle,editArticle,deleteArticle,loggout);
-        Scene newUserScene = new Scene(newUserLayout, 300, 300);
+        // Set actions for the new backup and load buttons
 
-        primaryStage.setScene(newUserScene);
+        // Backup everything button
+        backupEverythingButton.setOnAction(e -> {
+            try {
+                ArticleDatabase.backupToFile("full_backup");
+                System.out.println("Backup of the entire database created successfully.");
+            } catch (Exception ex) {
+                System.out.println("Error during full database backup: " + ex.getMessage());
+            }
+        });
+
+        // Backup only a certain group button
+        backupGroupButton.setOnAction(e -> {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Backup Certain Group");
+            dialog.setHeaderText("Enter the group ID(s) to backup:");
+            dialog.setContentText("Group ID(s):");
+
+            dialog.showAndWait().ifPresent(groupIds -> {
+                try {
+                    ArticleDatabase.backupToFile("group_backup", groupIds);
+                    System.out.println("Backup of group(s) " + groupIds + " created successfully.");
+                } catch (Exception ex) {
+                    System.out.println("Error during group backup: " + ex.getMessage());
+                }
+            });
+        });
+
+        // Load/Replace database button
+        loadReplaceDatabaseButton.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Select Database Backup to Load/Replace");
+            File selectedFile = fileChooser.showOpenDialog(primaryStage);
+
+            if (selectedFile != null) {
+                try {
+                    ArticleDatabase.loadFromFile(selectedFile.getAbsolutePath(), true);  // Replace mode
+                    System.out.println("Database replaced with backup from " + selectedFile.getName());
+                } catch (Exception ex) {
+                    System.out.println("Error during database replace: " + ex.getMessage());
+                }
+            }
+        });
+
+        // Load/Merge database button
+        loadMergeDatabaseButton.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Select Database Backup to Load/Merge");
+            File selectedFile = fileChooser.showOpenDialog(primaryStage);
+
+            if (selectedFile != null) {
+                try {
+                    ArticleDatabase.loadFromFile(selectedFile.getAbsolutePath(), false);  // Merge mode
+                    System.out.println("Database merged with backup from " + selectedFile.getName());
+                } catch (Exception ex) {
+                    System.out.println("Error during database merge: " + ex.getMessage());
+                }
+            }
+        });
+
+        // Layout for the Instructor Homepage
+        VBox instructorLayout = new VBox(10, createArticle, viewArticle, editArticle, deleteArticle,
+                backupEverythingButton, backupGroupButton,
+                loadReplaceDatabaseButton, loadMergeDatabaseButton, logoutButton);
+        Scene instructorScene = new Scene(instructorLayout, 300, 400);
+
+        primaryStage.setScene(instructorScene);
         primaryStage.show();
-
     }
+
     private void showlistArticlePage(Stage primaryStage,String Action) {
         Label listUsersLabel = new Label("List of Articles:");
         Button backButton = new Button("Back");

@@ -251,4 +251,24 @@ public class ArticleDatabase {
 			// ex: C:\Users\KT_Laptop\eclipse-workspace\HW6\backups\1146pm.zip
 			databaseHelper.loadFromFile(loadFilename);
 		}
+	public static void backupToFile(String filename) throws Exception {
+		callBackupFile(filename); // Use the existing method to handle backup
 	}
+
+	// Method to load articles from a file
+	public static void loadFromFile(String filename, boolean replace) throws Exception {
+		// This will replace or merge depending on the 'replace' flag
+		if (replace) {
+			System.out.println("Replacing current database with data from " + filename);
+			// Code to handle replacing data
+			callLoadFile(filename); // Replaces the current database data
+		} else {
+			System.out.println("Merging data from " + filename + " with current database");
+			// Code to handle merging data
+			callLoadFile(filename); // Merge logic should be implemented in DatabaseHelper if needed
+		}
+	}
+
+	public static void backupToFile(String groupBackup, String groupIds) {
+	}
+}
