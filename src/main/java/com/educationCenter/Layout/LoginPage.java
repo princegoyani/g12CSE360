@@ -8,6 +8,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import com.educationCenter.App;
 import javafx.geometry.Insets;
+import com.educationCenter.App;
 
 public class LoginPage extends Application {
     // A list to store created users
@@ -503,7 +504,7 @@ public class LoginPage extends Application {
                 showResetPassword(primaryStage,email);
             }
             else {
-                System.out.println("Something Failed!");
+                System.out.println("Something Failed");
             }
         });
 
@@ -518,7 +519,7 @@ public class LoginPage extends Application {
 
     private void showStudentPage(Stage primaryStage) {
 
-        Button loggout = new Button("Logout!");
+        Button loggout = new Button("Logout");
 
 
         loggout.setOnAction(e -> {
@@ -537,29 +538,29 @@ public class LoginPage extends Application {
     private void showInstructorPage(Stage primaryStage) {
 
 
-        Button createArticle = new Button("Create Article!");
-        Button editArticle = new Button("Edit Article!");
-        Button viewArticle = new Button("View Article!");
-        Button deleteArticle = new Button("Delete Article!");
-//        Button backup = new Button("Backup Data!");
-//        Button restore = new Button("restore Article!");
-        Button loggout = new Button("Logout!");
+        Button createArticle = new Button("Create Article");
+        Button editArticle = new Button("Edit Article");
+        Button viewArticle = new Button("View Article");
+        Button deleteArticle = new Button("Delete Article");
+//        Button backup = new Button("Backup Data");
+//        Button restore = new Button("restore Article");
+        Button loggout = new Button("Logout");
 
 
         createArticle.setOnAction(e -> {
-            // showCreateArticlePage(primaryStage);
+            showCreateArticlePage(primaryStage);
         });
 
         editArticle.setOnAction(e -> {
-            //showEditArticlePage(primaryStage);
+            showEditArticlePage(primaryStage);
         });
 
         viewArticle.setOnAction(e -> {
-            //showViewArticlePage(primaryStage);
+            showViewArticlePage(primaryStage);
         });
 
         deleteArticle.setOnAction(e -> {
-            //showdeleteArticlePage(primaryStage);
+            showdeleteArticlePage(primaryStage);
         });
 
 
@@ -647,7 +648,7 @@ public class LoginPage extends Application {
     private void showdeleteArticlePage(Stage primaryStage) {
         Label deleteArticleLabel = new Label("Delete Article Id:");
         TextField deleteArticleField = new TextField();
-        Button deleteArticle = new Button("Delete Article!");
+        Button deleteArticle = new Button("Delete Article");
         Button backButton = new Button("Back");
 
         TextArea errorArea = new TextArea();
@@ -719,8 +720,114 @@ public class LoginPage extends Application {
     }
 
     private void showCreateArticlePage(Stage primaryStage) {
+        Label createArticleLabel = new Label("Create New Article");
 
+        // Article fields
+        TextField titleField = new TextField();
+        titleField.setPromptText("Enter Article Title");
+
+        TextArea contentArea = new TextArea();
+        contentArea.setPromptText("Enter Article Content");
+        contentArea.setWrapText(true);
+
+        TextField authorField = new TextField();
+        authorField.setPromptText("Enter Author Name");
+
+        TextField abstractField = new TextField();
+        abstractField.setPromptText("Enter Article Abstract");
+
+        TextField keywordsField = new TextField();
+        keywordsField.setPromptText("Enter Keywords (comma-separated)");
+
+        TextField referencesField = new TextField();
+        referencesField.setPromptText("Enter References");
+
+        ComboBox<String> difficultyComboBox = new ComboBox<>();
+        difficultyComboBox.getItems().addAll("Beginner", "Intermediate", "Expert");
+        difficultyComboBox.setPromptText("Select Difficulty");
+
+        TextField groupingField = new TextField();
+        groupingField.setPromptText("Enter Grouping");
+
+        // Sensitive data fields
+        CheckBox sensitiveCheckBox = new CheckBox("Sensitive Data");
+        Label sensitiveInfoLabel = new Label("Sensitive Information:");
+        TextField nonSensTitleField = new TextField();
+        nonSensTitleField.setPromptText("Enter Non-Sensitive Title");
+        TextField nonSensAbstractField = new TextField();
+        nonSensAbstractField.setPromptText("Enter Non-Sensitive Abstract");
+        TextField sensitiveKeyField = new TextField();
+        sensitiveKeyField.setPromptText("Enter Sensitive Key");
+
+        // Hide sensitive fields initially
+        sensitiveInfoLabel.setVisible(false);
+        nonSensTitleField.setVisible(false);
+        nonSensAbstractField.setVisible(false);
+        sensitiveKeyField.setVisible(false);
+
+        sensitiveCheckBox.setOnAction(e -> {
+            boolean isSensitive = sensitiveCheckBox.isSelected();
+            sensitiveInfoLabel.setVisible(isSensitive);
+            nonSensTitleField.setVisible(isSensitive);
+            nonSensAbstractField.setVisible(isSensitive);
+            sensitiveKeyField.setVisible(isSensitive);
+        });
+
+        Button createButton = new Button("Create Article");
+        createButton.setOnAction(e -> {
+            String title = titleField.getText();
+            String content = contentArea.getText();
+            String author = authorField.getText();
+            String abstrac = abstractField.getText();
+            String keywords = keywordsField.getText();
+            String references = referencesField.getText();
+            String difficulty = difficultyComboBox.getValue();
+            String grouping = groupingField.getText();
+            boolean isSensitive = sensitiveCheckBox.isSelected();
+
+            if (title.isEmpty() || content.isEmpty() || author.isEmpty() || abstrac.isEmpty() || keywords.isEmpty() ||
+                    references.isEmpty() || difficulty == null || grouping.isEmpty()) {
+                System.out.println("Please fill in all fields before creating the article.");
+                return;
+            }
+
+            try {
+                if (isSensitive) {
+                    String nonSensTitle = nonSensTitleField.getText();
+                    String nonSensAbstrac = nonSensAbstractField.getText();
+                    String sensKey = sensitiveKeyField.getText();
+
+                    if (nonSensTitle.isEmpty() || nonSensAbstrac.isEmpty() || sensKey.isEmpty()) {
+                        System.out.println("Please fill in all sensitive information fields.");
+                        return;
+                    }
+
+                    // Call sensitive article creation method in App
+                    ArticleDatabase.callCreateArticle(title, content, author, abstrac, keywords, references, difficulty, grouping, nonSensTitle, nonSensAbstrac, sensKey);
+                    System.out.println("Sensitive article created successfully.");
+                } else {
+                    // Call non-sensitive article creation method in App
+                    ArticleDatabase.callCreateArticle(title, content, author, abstrac, keywords, references, difficulty, grouping);
+                    System.out.println("Non-sensitive article created successfully.");
+                }
+            } catch (Exception ex) {
+                System.out.println("Error creating article: " + ex.getMessage());
+            }
+        });
+
+        Button backButton = new Button("Back");
+        backButton.setOnAction(e -> showInstructorPage(primaryStage));
+
+        VBox createArticleLayout = new VBox(10, createArticleLabel, titleField, contentArea, authorField, abstractField,
+                keywordsField, referencesField, difficultyComboBox, groupingField, sensitiveCheckBox, sensitiveInfoLabel,
+                nonSensTitleField, nonSensAbstractField, sensitiveKeyField, createButton, backButton);
+        createArticleLayout.setPadding(new Insets(10));
+
+        Scene createArticleScene = new Scene(createArticleLayout, 400, 600);
+        primaryStage.setScene(createArticleScene);
+        primaryStage.show();
     }
+
 
     public static void main(String[] args) {
         launch(args);
