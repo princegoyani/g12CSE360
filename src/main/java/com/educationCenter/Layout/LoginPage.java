@@ -1,5 +1,6 @@
 package com.educationCenter.Layout;
 import com.educationCenter.Articler_Database_Handler.ArticleDatabase;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -606,7 +607,6 @@ public class LoginPage extends Application {
             start(primaryStage);
         });
 
-        // Set action to navigate to the Backup/Restore page
         backupRestoreButton.setOnAction(e -> showBackupRestorePage(primaryStage));
 
         // Layout for the Instructor Homepage
@@ -618,10 +618,6 @@ public class LoginPage extends Application {
         primaryStage.show();
     }
 
-    private void showlistArticlePage(Stage primaryStage, String edit) {
-    }
-
-    // New method for the Backup/Restore page
     private void showBackupRestorePage(Stage primaryStage) {
         // Text field for entering the file name
         Label fileNameLabel = new Label("Enter File Name:");
@@ -645,7 +641,7 @@ public class LoginPage extends Application {
                 System.out.println("Please enter a file name for backup.");
             } else {
                 try {
-                    ArticleDatabase.callBackupFile(fileName);
+                    ArticleDatabase.backupToFile(fileName);
                     System.out.println("Backup of the entire database created with filename: " + fileName);
                 } catch (Exception ex) {
                     System.out.println("Error during full database backup: " + ex.getMessage());
@@ -666,7 +662,7 @@ public class LoginPage extends Application {
 
                 groupDialog.showAndWait().ifPresent(groupIds -> {
                     try {
-                        ArticleDatabase.callBackupFile(fileName + "_" + groupIds);
+                        ArticleDatabase.callBackupByGrouping(fileName , groupIds);
                         System.out.println("Backup of group(s) " + groupIds + " created with filename: " + fileName);
                     } catch (Exception ex) {
                         System.out.println("Error during group backup: " + ex.getMessage());
@@ -683,10 +679,10 @@ public class LoginPage extends Application {
 
             if (selectedFile != null) {
                 try {
-                    ArticleDatabase.callLoadFile(selectedFile.getAbsolutePath(), true);  // Replace mode
-                    System.out.println("Database replaced with backup from " + selectedFile.getName());
+                    ArticleDatabase.callLoadFile(selectedFile.getAbsolutePath());  // Replace mode
+                    System.out.println("Database replaced with backup from " + selectedFile.getAbsolutePath());
                 } catch (Exception ex) {
-                    System.out.println("Error during database replace: " + ex.getMessage());
+                    System.out.println("Errors during database replace: " + ex.getMessage());
                 }
             }
         });
@@ -699,7 +695,7 @@ public class LoginPage extends Application {
 
             if (selectedFile != null) {
                 try {
-                    ArticleDatabase.callLoadFile(selectedFile.getAbsolutePath(), false);  // Merge mode
+                    ArticleDatabase.callLoadFileMerge(selectedFile.getAbsolutePath());  // Merge mode
                     System.out.println("Database merged with backup from " + selectedFile.getName());
                 } catch (Exception ex) {
                     System.out.println("Error during database merge: " + ex.getMessage());
@@ -716,6 +712,47 @@ public class LoginPage extends Application {
         primaryStage.show();
     }
 
+
+    private void showlistArticlePage(Stage primaryStage,String Action) {
+        Label listUsersLabel = new Label("List of Articles:");
+        Button backButton = new Button("Back");
+
+        ListView<String> ArticleListView = new ListView<>();
+        String[][] datas = ArticleDatabase.returnListArticles();
+        if (datas != null) {
+            System.out.println(datas);
+            for (String[] data : datas) {
+                StringBuilder userData = new StringBuilder(data[0]);  // Start with user ID
+                for (int j = 1; j < data.length; j++) {
+                    userData.append(" ").append(data[j]);
+                }
+                ArticleListView.getItems().add(userData.toString());
+            }
+
+            // Handle click events on the user list items
+            ArticleListView.setOnMouseClicked(event -> {
+                String selectedArticle = ArticleListView.getSelectionModel().getSelectedItem();
+                System.out.println(selectedArticle);
+                if (selectedArticle != null) {
+                    String userId = selectedArticle.split(" ")[0];  // Assuming ID is the first element
+                    System.out.println(userId);
+                    if (Action.equals("view")) {
+                        showViewArticlePage(primaryStage, userId);
+                    }else if (Action.equals("edit")) {
+                        showEditArticlePage(primaryStage, userId);
+                    }
+                }
+            });
+
+            backButton.setOnAction(e -> start(primaryStage));
+
+            VBox listUsersLayout = new VBox(10, listUsersLabel, ArticleListView, backButton);
+            Scene listUsersScene = new Scene(listUsersLayout, 300, 300);
+
+            primaryStage.setScene(listUsersScene);
+            primaryStage.show();
+        }
+    }
 
     private void showViewArticlePage(Stage primaryStage,String articleId) {
         // create a label and text field for showing article title
@@ -795,18 +832,7 @@ public class LoginPage extends Application {
             }
         });
 
-        backButton.setOnAction(e -> {
-            switch(App.getActiveRole()){
-                case "instructor":
-                    showInstructorPage(primaryStage);
-                    break;
-                case "admin":
-                    showAdminHomepage(primaryStage);
-                    break;
-                default:
-                    System.out.println("ERROR: Invalid active role, returning to login screen");
-            }
-        });
+        backButton.setOnAction(e -> { start(primaryStage); });
         VBox newUserLayout = new VBox(10,deleteArticleLabel,deleteArticleField,deleteArticle,backButton,errorArea);
         Scene newUserScene = new Scene(newUserLayout, 300, 300);
 
@@ -850,18 +876,7 @@ public class LoginPage extends Application {
 
         // back button
         Button backButton = new Button("Back");
-        backButton.setOnAction(e -> {
-            switch (App.getActiveRole()) {
-                case "instructor":
-                    showInstructorPage(primaryStage);
-                    break;
-                case "admin":
-                    showAdminHomepage(primaryStage);
-                    break;
-                default:
-                    System.out.println("ERROR: Invalid active role, returning to login screen");
-            }
-        });
+        backButton.setOnAction(e -> start(primaryStage));
         // layout
         VBox editArticleLayout = new VBox(10, editArticleLabel, titleField, contentArea, saveButton, backButton);
         editArticleLayout.setPadding(new Insets(10)); // Add padding around the layout
@@ -945,6 +960,7 @@ public class LoginPage extends Application {
             }
 
             try {
+
                 if (isSensitive) {
                     String nonSensTitle = nonSensTitleField.getText();
                     String nonSensAbstrac = nonSensAbstractField.getText();
@@ -981,22 +997,11 @@ public class LoginPage extends Application {
         });
 
         Button backButton = new Button("Back");
-        backButton.setOnAction(e -> {
-            switch(App.getActiveRole()){
-                case "instructor":
-                    showInstructorPage(primaryStage);
-                    break;
-                case "admin":
-                    showAdminHomepage(primaryStage);
-                    break;
-                default:
-                    System.out.println("ERROR: Invalid active role, returning to login screen");
-            }
-        });
+        backButton.setOnAction(e -> start(primaryStage));
 
         VBox createArticleLayout = new VBox(10, createArticleLabel, titleField, contentArea, authorField, abstractField,
                 keywordsField, referencesField, difficultyComboBox, groupingField, sensitiveCheckBox, sensitiveInfoLabel,
-                nonSensTitleField, nonSensAbstractField, sensitiveKeyField, createButton, backButton,statusMessage);
+                nonSensTitleField, nonSensAbstractField, sensitiveKeyField, createButton, backButton);
         createArticleLayout.setPadding(new Insets(10));
 
         Scene createArticleScene = new Scene(createArticleLayout, 400, 600);

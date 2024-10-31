@@ -1,9 +1,15 @@
 package com.educationCenter.Articler_Database_Handler;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.*; import java.sql.Connection; import java.sql.DriverManager;
 import java.sql.SQLException; import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.h2.tools.Backup;
 import org.h2.tools.Restore;
@@ -37,13 +43,13 @@ import com.educationCenter.Encryption.EncryptionHelper; import com.educationCent
 	 */
 class DatabaseHelper {
 	static final String JDBC_DRIVER = "org.h2.Driver";   
-	static final String DB_NAME = "Test2002";
+	static final String DB_NAME = "Test2003";
 	//static final String DB_URL = "jdbc:h2:~/articleDB/" + DB_NAME;
 	//static final String DB_URL = "jdbc:h2:~/" + DB_NAME;
 	static final String DB_URL = "jdbc:h2:file:./database/" + DB_NAME;
 	//static final String DB_URL = "jdbc:h2:file:database/Test1005";
-	static final String DB_ROOT = "./database/";
-	static final String DB_BACKUP_ROOT = "\\backups";
+	static final String DB_ROOT = "/Users/prince/IdeaProjects/g12CSE360/database/";
+	static final String DB_BACKUP_ROOT = "jdbc:h2:file:/backups/";
 	static final String USER = "sa"; static final String PASS = "";
 	private Connection connection = null;
 	private Statement statement = null;
@@ -60,11 +66,20 @@ class DatabaseHelper {
 	}
 	// connectToDatabase(string) allows connection with a database other than default database.
 	public void connectToDatabase(String loadFileURL) throws SQLException {
+		Connection backupConnection = null; // New connection for backup
 		try {
-			Class.forName(JDBC_DRIVER); System.out.println("Connecting to database...");
-			connection = DriverManager.getConnection(loadFileURL, USER, PASS); statement = connection.createStatement();
-			createTables();
-		} catch (ClassNotFoundException e) { System.err.println("JDBC Driver not found: " + e.getMessage()); }
+			Class.forName(JDBC_DRIVER);
+			System.out.println("Connecting to backup database...");
+			backupConnection = DriverManager.getConnection(loadFileURL, USER, PASS);
+			Statement backupStatement = backupConnection.createStatement();
+		} catch (ClassNotFoundException e) {
+			System.err.println("JDBC Driver not found: " + e.getMessage());
+		} finally {
+			// Close backup connection
+			if (backupConnection != null && !backupConnection.isClosed()) {
+				backupConnection.close();
+			}
+		}
 	}
 	// createTables() creates the database correct form for article data.
 	private void createTables() throws SQLException {
@@ -94,24 +109,50 @@ class DatabaseHelper {
 	public void backupToFile(String backupFilename) throws SQLException {
 		System.out.println("Attempting backup...");
 		//String backupPath = "C:\\Users\\KT_Laptop\\eclipse-workspace\\HW6\\backups\\" + backupFilename + ".zip";
-		String backupPath = "C:\\IntelliJ\\g12CSE360-main\\backups\\" + backupFilename + ".zip";
-		closeConnection(); Backup.execute(backupPath, DB_ROOT, DB_NAME, false); connectToDatabase(); System.out.println("Backup completed.");
+		String backupPath = "./backups/" + backupFilename + ".zip";
+
+		this.closeConnection(); Backup.execute(backupPath,"./database/", DB_NAME, false); this.connectToDatabase(); System.out.println("Backup completed.");
 	}
 	//
-	public void backupToFile(String backupFilename, String groupingIDs) throws SQLException {
+	public void backupByGrouping(String backupFilename, String groupingIDs) throws Exception {
+		backupToFile("full_backup"); // Backup to temp
 
-		// CREATE NEW DATABASE FILE, CONNECT TO IT, AND CREATE THAT NEW DATABASE ONLY WITH ENTRIES THAT PASS TEST
+		//  Delete articles
+		String[] parsedGroups = groupingIDs.split("\\s+");
+		if (parsedGroups.length == 0) {
+			System.out.println("No groupings provided.");
+			return;
+		}
+		String sql = "SELECT * FROM cse360articles";
+		Statement stmt = connection.createStatement();
+		ResultSet rs = stmt.executeQuery(sql);
 
-		System.out.println("Attempting backup...");
-		String backupPath = "C:\\Users\\KT_Laptop\\eclipse-workspace\\HW6\\backups\\" + backupFilename + ".zip";
-		closeConnection(); Backup.execute(backupPath, DB_ROOT, DB_NAME, false); connectToDatabase(); System.out.println("Backup completed.");
+		while (rs.next()) {
+			int id = rs.getInt("id");
+			String articleGroupings = rs.getString("grouping");
+			boolean allPresent = true;
+
+			// Check if article matches all groupings
+			for (String userString : parsedGroups) {
+				if (!articleGroupings.contains(userString)) {
+					allPresent = false;
+					break;
+				}
+			}
+
+			if (!allPresent) {
+				deleteArticleByKey(id);
+			}
+		}
+		backupToFile(backupFilename);
+		loadFromFile("./backups/full_backup.zip");
 	}
 	//
 		//
 	// saveDatabase() save backup of current database.
 	public void saveDatabase() throws SQLException {
 		String backupPath = "C:\\Users\\KT_Laptop\\eclipse-workspace\\HW6\\backups\\exitSave.zip";
-		closeConnection(); Backup.execute(backupPath, DB_ROOT, DB_NAME, false);
+		this.closeConnection(); Backup.execute(backupPath, DB_ROOT, DB_NAME, false);
 	}
 	// loadFromFile() load database from user-specified file.
 	public void loadFromFile(String loadDb) throws Exception {
@@ -123,10 +164,90 @@ class DatabaseHelper {
 			stmtDel.setInt(1, id); stmtDel.executeUpdate();
 			System.out.printf("Article %2d set to empty.\n", id);
 		} // Current database confirmed as empty, then new database will be loaded.
-		displayArticles(); closeConnection(); Restore.execute(loadDb, DB_ROOT, DB_NAME);
+		displayArticles(); this.closeConnection(); Restore.execute(loadDb, DB_ROOT, DB_NAME);
 		System.out.println("Existing database disconnected, backup database loaded from file."); connectToDatabase();
 	}
+	//
+	//
+	private String extractBackup(String zipFilePath) throws IOException {
+		String tempDir = "./backups/extracted";
+		File dir = new File(tempDir);
+		if (!dir.exists()) {
+			dir.mkdirs(); // Create directory if it does not exist
+		}
+		try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(Paths.get(zipFilePath)))) {
+			ZipEntry zipEntry;
+			while ((zipEntry = zis.getNextEntry()) != null) {
+				File newFile = new File(tempDir, zipEntry.getName());
+				if (zipEntry.isDirectory()) {
+					newFile.mkdirs();
+				} else {
+					// parent directories created
+					new File(newFile.getParent()).mkdirs();
+					Files.copy(zis, newFile.toPath());
+				}
+				zis.closeEntry();
+			}
+		}
+		return tempDir + "/" + DB_NAME;
+	}
+	//
+	//
+	// loadFromFileMerge() merges database from user-specified file.
+	public void loadFromFileMerge(String loadDb) throws Exception {
+		// Extract the backup zip file
+		String extractedDbPath = extractBackup(loadDb); // Extract to a temporary path
 
+		// Connect to the backup database
+		String tempDbPath = DB_URL+DB_NAME;
+		Connection backupConnection = null;
+		try {
+			backupConnection = DriverManager.getConnection(tempDbPath, USER, PASS);
+			String sql = "SELECT * FROM cse360articles";
+
+			try (Statement stmt = backupConnection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+				// Iterate through backup articles
+				while (rs.next()) {
+					long creationID = rs.getLong("creationID");
+					String title = rs.getString("title");
+					String body = rs.getString("body");
+					String author = rs.getString("author");
+					String abstrac = rs.getString("abstrac");
+					String keywords = rs.getString("keywords");
+					String references = rs.getString("references");
+					int difficulty = rs.getInt("difficulty");
+					String grouping = rs.getString("grouping");
+					String nonSensTitle = rs.getString("nonSensTitle");
+					String nonSensAbstrac = rs.getString("nonSensAbstrac");
+					String nonSensKey = rs.getString("nonSensKey");
+
+					// Check if the article already exists in the current database
+					String checkSql = "SELECT COUNT(*) FROM cse360articles WHERE creationID = ?";
+					try (PreparedStatement checkStmt = connection.prepareStatement(checkSql)) {
+						checkStmt.setLong(1, creationID);
+						ResultSet countResult = checkStmt.executeQuery();
+						countResult.next();
+						int count = countResult.getInt(1);
+
+						// If article does not exist, insert it
+						if (count == 0) {
+							createMergedArticle(title, body, author, abstrac, keywords, references, String.valueOf(difficulty), grouping, nonSensTitle, nonSensAbstrac, nonSensKey);
+							System.out.printf("Article %d merged.\n", creationID);
+						} else {
+							System.out.printf("Article %d already exists, skip merge.\n", creationID);
+						}
+					}
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			// Ensure backup connection is closed
+			if (backupConnection != null && !backupConnection.isClosed()) {
+				backupConnection.close();
+			}
+		}
+	}
 	// isDatabaseEmpty() returns a boolean signifying whether the database is empty or not.
 	public boolean isDatabaseEmpty() throws SQLException {
 		String query = "SELECT COUNT(*) AS count FROM cse360articles"; ResultSet resultSet = statement.executeQuery(query);
@@ -192,7 +313,48 @@ class DatabaseHelper {
 			}
 		} catch (SQLException e) { e.printStackTrace(); }
 	}
-
+		public void createMergedArticle(String title, String body, String author, String abstrac, String keywords, String references, String difficulty, String grouping, String nonSensTitle, String nonSensAbstrac, String nonSensKey) throws Exception {
+			// This method assumes the data passed is already encrypted where necessary.
+			String insertUser = "INSERT INTO cse360articles (title, body, author, abstrac, keywords, references, difficulty, grouping, nonSensTitle, nonSensAbstrac, nonSensKey) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			try (PreparedStatement pstmt = connection.prepareStatement(insertUser, Statement.RETURN_GENERATED_KEYS)) {
+				pstmt.setString(1, title); //
+				pstmt.setString(2, body);  //
+				pstmt.setString(3, author); //
+				pstmt.setString(4, abstrac); //
+				pstmt.setString(5, keywords); //
+				pstmt.setString(6, references); //
+				pstmt.setInt(7, Integer.parseInt(difficulty)); //
+				pstmt.setString(8, grouping); //
+				pstmt.setString(9, nonSensTitle); //
+				pstmt.setString(10, nonSensAbstrac); //
+				pstmt.setString(11, nonSensKey); //
+				// Execute insert
+				int affectedRows = pstmt.executeUpdate();
+				if (affectedRows == 0) {
+					throw new SQLException("Inserting article failed, no rows affected.");
+				}
+				// Retrieve generated keys
+				try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+					if (generatedKeys.next()) {
+						long autoIncrementedId = generatedKeys.getLong(1);
+						// Create uniqueID
+						long hashValue = DB_NAME.hashCode();
+						long uniqueId = (hashValue & 0xFFFFFFFFL) + autoIncrementedId;
+						// Update creationID field for new article
+						String updateCreationID = "UPDATE cse360articles SET creationID = ? WHERE id = ?";
+						try (PreparedStatement updateStmt = connection.prepareStatement(updateCreationID)) {
+							updateStmt.setLong(1, uniqueId);
+							updateStmt.setLong(2, autoIncrementedId);
+							updateStmt.executeUpdate();
+						}
+					} else {
+						throw new SQLException("No ID obtained.");
+					}
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 	// createArticle - sensitive - sensitive fields populated
 	public void createArticle(String title, String body, String author, String abstrac, String keywords, String references, String difficulty, String grouping, String nonSensTitle, String nonSensAbstrac, String sensKey) throws Exception {
 		int difficultyLevel;

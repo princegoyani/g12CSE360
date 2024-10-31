@@ -153,16 +153,26 @@ public class ArticleDatabase {
 					}
 				}
 				break;
-			case "9": // display article by groupings (String groupings space seprated)
-				System.out.print("\nDisplay articles by grouping.\nEnter group IDs (space-separated): ");
-				String searchGroupings = scanner.nextLine();
-
-				databaseHelper.displayArticlesByGrouping(searchGroupings);
-
-				break;
-			case "0": // "Quit" ensures current database is saved before closing connection.
-				System.out.println("\nQuit program.\nSaving database..."); databaseHelper.saveDatabase(); return;
-			default: System.out.println("\nInvalid menu choice.");
+				case "9": // display article by groupings (String groupings space seprated)
+					System.out.print("\nDisplay articles by grouping.\nEnter group IDs (space-separated): ");
+					String searchGroupings = scanner.nextLine();
+					databaseHelper.displayArticlesByGrouping(searchGroupings);
+					break;
+				case "10": // "Merge Article Set From File"
+					System.out.print("\nMerge database from file.\nEnter the .zip database path and filename (with extension): ");
+					String mergeDb = scanner.nextLine();
+					System.out.print("\n"); databaseHelper.loadFromFileMerge(mergeDb);
+					break;
+				case "11": // "Backup By Groupings" prompts user for filename for backup creation of current database.
+					System.out.print("\nBackup database to file.\nEnter the backup filename (without file extension): ");
+					String backupGroupingsFilename = scanner.nextLine();
+					System.out.print("\nEnter Groupings String To Backup By: ");
+					String backupGroupingsGroupings = scanner.nextLine();
+					databaseHelper.backupByGrouping(backupGroupingsFilename, backupGroupingsGroupings);
+					break;
+				case "0": // "Quit" ensures current database is saved before closing connection.
+					System.out.println("\nQuit program.\nSaving database..."); databaseHelper.saveDatabase(); return;
+				default: System.out.println("\nInvalid menu choice.");
 			}
 		}
 	}
@@ -242,9 +252,12 @@ public class ArticleDatabase {
 //			databaseHelper.editArticleByKeySens(editKey, editTitle, editBody, editAuthor, editAbstrac, editKeywords, editReferences, editDifficulty, editGrouping, editNonSensKey, editNonSensTitle, editNonSensAbstrac);
 //		} // Edit Article As New Sensitive Article
 
-		public static void callBackupFile(String backupFilename) throws Exception {
-			//  backup filename without file extension e.g. "backup1"
-			databaseHelper.backupToFile(backupFilename);
+//		public static void callBackupFile(String backupFilename) throws Exception {
+//			//  backup filename without file extension e.g. "backup1"
+//			databaseHelper.backupToFile(backupFilename);
+//		}
+		public static void callBackupByGrouping(String backupFilename, String groupingIDs) throws Exception {
+			databaseHelper.backupByGrouping(backupFilename, groupingIDs);
 		}
 		public static void callLoadFile(String loadFilename) throws Exception {
 			// Enter the .zip database path and filename with extension
@@ -252,29 +265,17 @@ public class ArticleDatabase {
 			databaseHelper.loadFromFile(loadFilename);
 		}
 	public static void backupToFile(String filename) throws Exception {
-		callBackupFile(filename); // Use the existing method to handle backup
+		databaseHelper.backupToFile(filename); // Use the existing method to handle backup
 	}
-
 	// Method to load articles from a file
-	public static void loadFromFile(String filename, boolean replace) throws Exception {
-		// This will replace or merge depending on the 'replace' flag
-		if (replace) {
-			System.out.println("Replacing current database with data from " + filename);
-			// Code to handle replacing data
-			callLoadFile(filename); // Replaces the current database data
-		} else {
-			System.out.println("Merging data from " + filename + " with current database");
-			// Code to handle merging data
-			callLoadFile(filename); // Merge logic should be implemented in DatabaseHelper if needed
-		}
+
+
+	public static void callLoadFileMerge(String loadFilename) throws Exception {
+		// Enter the .zip database path and filename with extension
+		// ex: C:\Users\KT_Laptop\eclipse-workspace\HW6\backups\1146pm.zip
+		databaseHelper.loadFromFileMerge(loadFilename);
 	}
 
-	public static void backupToFile(String groupBackup, String groupIds) {
-	}
 
-	public static void callBackupFile(String s, String groupIds) {
-	}
 
-	public static void callLoadFile(String absolutePath, boolean b) {
-	}
 }
