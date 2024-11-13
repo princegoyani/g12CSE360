@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class DatabaseHelper {
+public class UserDatabaseHelper {
 
 	// JDBC driver name and database URL 
 	static final String JDBC_DRIVER = "org.h2.Driver";
@@ -22,14 +22,14 @@ public class DatabaseHelper {
 	private Connection connection = null;
 	private Statement statement = null; 
 	//	PreparedStatement
-	public boolean connectToDatabase() throws SQLException {
+	public boolean userConnectToDatabase() throws SQLException {
 		try {
 			System.out.println("Checking for driver: ");
 			Class.forName(JDBC_DRIVER); // Load the JDBC driver
 			System.out.println("Connecting to database...");
 			connection = DriverManager.getConnection(DB_URL, USER, PASS);
 			statement = connection.createStatement(); 
-			createTables();  // Create the necessary tables if they don't exist
+			UserCreateTables();  // Create the necessary tables if they don't exist
 			return true;
 		} catch (ClassNotFoundException e) {
 			System.err.println("JDBC Driver not found: " + e.getMessage());
@@ -37,7 +37,7 @@ public class DatabaseHelper {
 		}
 	}
 
-	private void createTables() throws SQLException {
+	private void UserCreateTables() throws SQLException {
 		String userTable = "CREATE TABLE IF NOT EXISTS cse360users ("
 				+ "id INT AUTO_INCREMENT PRIMARY KEY, "
 				+ "username VARCHAR(255) UNIQUE, "

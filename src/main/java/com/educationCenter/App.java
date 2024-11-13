@@ -6,10 +6,10 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
-import com.educationCenter.User_Database_Handler.DatabaseHelper;
+import com.educationCenter.User_Database_Handler.UserDatabaseHelper;
 
 public class App {
-	private static final DatabaseHelper databaseHelper = new DatabaseHelper();
+	private static final UserDatabaseHelper USER_DATABASE_HELPER = new UserDatabaseHelper();
 	private static final Scanner scanner = new Scanner(System.in);
 	private static String username;
 	private static String password;
@@ -27,11 +27,11 @@ public class App {
 
     	try {
 
-    		databaseHelper.connectToDatabase(); // connecting to database
+    		USER_DATABASE_HELPER.userConnectToDatabase(); // connecting to database
 
     		while (true){
 
-	    		if (databaseHelper.isDatabaseEmpty()) {
+	    		if (USER_DATABASE_HELPER.isDatabaseEmpty()) {
 					System.out.println( "In-Memory Database  is empty" );
 					//set up administrator access
 
@@ -85,14 +85,14 @@ public class App {
 		}}catch (SQLException e) {
     		System.out.println(e.getMessage());
     	}
-    	databaseHelper.closeConnection();
+    	USER_DATABASE_HELPER.closeConnection();
 
     }
 
 
 	public static boolean connect(){
 		try {
-			if (databaseHelper.connectToDatabase()) {
+			if (USER_DATABASE_HELPER.userConnectToDatabase()) {
 				return true;
 			}
 		}catch (SQLException e){
@@ -103,7 +103,7 @@ public class App {
 
 	public static boolean fristUser() {
 		try {
-			if (databaseHelper.isDatabaseEmpty()) {
+			if (USER_DATABASE_HELPER.isDatabaseEmpty()) {
 				return true;
 			}
 
@@ -118,7 +118,7 @@ public class App {
 
 		String[] user ;
 
-		user = databaseHelper.doesEmailExist(testEmail);
+		user = USER_DATABASE_HELPER.doesEmailExist(testEmail);
 		if (user != null){
 			System.out.println("Already Exists Username, Try Again!");
 			return false;
@@ -130,7 +130,7 @@ public class App {
 		String codeDetails = expiringDateTime+" "+onetimeCodeString;
 		String[] userRoles = {testRole};
 		try {
-			databaseHelper.generateUserByAdmin(testEmail, userRoles, codeDetails);
+			USER_DATABASE_HELPER.generateUserByAdmin(testEmail, userRoles, codeDetails);
 			return true;
 
 		}catch (SQLException e) {
@@ -142,7 +142,7 @@ public class App {
 	public static boolean userResetEmail(String username){
 		//date
 
-		String[] user = databaseHelper.doesUserExist(username);
+		String[] user = USER_DATABASE_HELPER.doesUserExist(username);
 
 		if (user == null){
 			System.out.println("User not exist!");
@@ -155,7 +155,7 @@ public class App {
 		String codeDetails = expiringDateTime+" "+onetimeCodeString;
 
 		try {
-			databaseHelper.resetbyemail(username, codeDetails);
+			USER_DATABASE_HELPER.resetbyemail(username, codeDetails);
 			return true;
 
 		}catch (SQLException e) {
@@ -169,14 +169,14 @@ public class App {
 
 	public static boolean resetPasword(String email,String passWord){
 		try {
-			String[] collectedData = databaseHelper.doesEmailExist(email);
+			String[] collectedData = USER_DATABASE_HELPER.doesEmailExist(email);
 
 			if (collectedData == null) {
 				System.out.println("No user with given USERNAME");
 				return false;
 			}
 
-			if (!databaseHelper.updatePassword(email, passWord)) {
+			if (!USER_DATABASE_HELPER.updatePassword(email, passWord)) {
 				return false;
 			}
 			;
@@ -201,7 +201,7 @@ public class App {
 		 try {
 			 String[] roles = {"admin"};
 
-			 databaseHelper.register(userName, passWord, roles);
+			 USER_DATABASE_HELPER.register(userName, passWord, roles);
 
 			 username = userName;
 			 password = passWord;
@@ -218,7 +218,7 @@ public class App {
 	public static boolean setupStudent(String userName, String passWord,String email) {
 		try {
 			String[] roles = {"student"};
-			databaseHelper.studentRegister(userName, passWord,email);
+			USER_DATABASE_HELPER.studentRegister(userName, passWord,email);
 
 			System.out.println("Administrator setup completed.");
 
@@ -236,13 +236,13 @@ public class App {
 					return activeRole;
 				}
 
-				datas = databaseHelper.login(loginName, credentials);
+				datas = USER_DATABASE_HELPER.login(loginName, credentials);
 				System.out.println(datas);
 				if (datas != null) {
 					System.out.println(datas[3]);
 					username = loginName;
 					password = credentials;
-					String[] roles = databaseHelper.getRoleArray(username,password);
+					String[] roles = USER_DATABASE_HELPER.getRoleArray(username,password);
 					if (roles.length > 1){
 						return "multi";
 					}
@@ -271,7 +271,7 @@ public class App {
 
 		public static String loginInvitedUser(String email, String inputCode){
 			//date
-			try {String onetimecode = databaseHelper.checkInvitedUser(email);
+			try {String onetimecode = USER_DATABASE_HELPER.checkInvitedUser(email);
 
 			if (onetimecode == null){
 				return "invalid";
@@ -290,7 +290,7 @@ public class App {
 				System.out.println("Wrong Password! Try Again");
 				return "invalid";
 			}
-			String[] data = databaseHelper.doesEmailExist(email);
+			String[] data = USER_DATABASE_HELPER.doesEmailExist(email);
 			if (data[1] == null){
 				return "new";
 			}
@@ -304,13 +304,13 @@ public class App {
 		public static boolean setupUserInformation(String fristName, String middleName, String lastName){
 
 			try {
-				databaseHelper.displayUsersByAdmin();
-				String[] data = databaseHelper.doesUserExist(username);
+				USER_DATABASE_HELPER.displayUsersByAdmin();
+				String[] data = USER_DATABASE_HELPER.doesUserExist(username);
 				if (data != null) {
 					System.out.println("Admin login successful.");
-					databaseHelper.displayUsersByAdmin();
+					USER_DATABASE_HELPER.displayUsersByAdmin();
 					String[] userData = {username, fristName, middleName, lastName};
-					if (databaseHelper.updateUserInformation(username, userData)) {
+					if (USER_DATABASE_HELPER.updateUserInformation(username, userData)) {
 						return true;
 					}
 					;
@@ -378,13 +378,13 @@ public class App {
 //			String inputUser = scanner.nextLine();
 		try {
 
-			String[] collectedUser = databaseHelper.doesUserExist(inputUser);
+			String[] collectedUser = USER_DATABASE_HELPER.doesUserExist(inputUser);
 			if (collectedUser == null) {
 				System.out.println("No such user!");
 				return false;
 			}
 
-			if (databaseHelper.deleteUser(inputUser)) {
+			if (USER_DATABASE_HELPER.deleteUser(inputUser)) {
 				System.out.println("Deleted Successfully");
 				return true;
 			}
@@ -399,7 +399,7 @@ public class App {
 		public static boolean addOrRemoveRole(String inputUser, String whatAction,String inputRole) {
 			try {
 
-				String[] collectedUser = databaseHelper.doesUserExist(inputUser);
+				String[] collectedUser = USER_DATABASE_HELPER.doesUserExist(inputUser);
 				if (collectedUser == null) {
 					System.out.println("No such user!");
 					return false;
@@ -420,7 +420,7 @@ public class App {
 					default:
 						throw new AssertionError();
 				}
-				databaseHelper.updateRole(inputUser, updateRoles);
+				USER_DATABASE_HELPER.updateRole(inputUser, updateRoles);
 			}catch (SQLException e) {
 				System.out.println(e);
 			}
@@ -429,7 +429,7 @@ public class App {
 
 		public static String[][] listOfUser(){
 			try {
-				return databaseHelper.getAllUsers();
+				return USER_DATABASE_HELPER.getAllUsers();
 			}catch (SQLException e){
 				System.out.println(e);
 			}
@@ -452,7 +452,7 @@ public class App {
 				break;
 			}
 			case "4":{
-				databaseHelper.displayUsersByAdmin();
+				USER_DATABASE_HELPER.displayUsersByAdmin();
 				break;
 			}
 			case "5":{

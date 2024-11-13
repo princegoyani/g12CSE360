@@ -640,12 +640,7 @@ public class LoginPage extends Application {
             if (fileName.isEmpty()) {
                 System.out.println("Please enter a file name for backup.");
             } else {
-                try {
-                    ArticleDatabase.backupToFile(fileName);
-                    System.out.println("Backup of the entire database created with filename: " + fileName);
-                } catch (Exception ex) {
-                    System.out.println("Error during full database backup: " + ex.getMessage());
-                }
+                ArticleDatabase.backupToFile(fileName);
             }
         });
 
@@ -661,12 +656,8 @@ public class LoginPage extends Application {
                 groupDialog.setContentText("Group ID(s):");
 
                 groupDialog.showAndWait().ifPresent(groupIds -> {
-                    try {
-                        ArticleDatabase.callBackupByGrouping(fileName , groupIds);
-                        System.out.println("Backup of group(s) " + groupIds + " created with filename: " + fileName);
-                    } catch (Exception ex) {
-                        System.out.println("Error during group backup: " + ex.getMessage());
-                    }
+                    ArticleDatabase.callBackupByGrouping(fileName , groupIds);
+
                 });
             }
         });
@@ -678,12 +669,8 @@ public class LoginPage extends Application {
             File selectedFile = fileChooser.showOpenDialog(primaryStage);
 
             if (selectedFile != null) {
-                try {
-                    ArticleDatabase.callLoadFile(selectedFile.getAbsolutePath());  // Replace mode
-                    System.out.println("Database replaced with backup from " + selectedFile.getAbsolutePath());
-                } catch (Exception ex) {
-                    System.out.println("Errors during database replace: " + ex.getMessage());
-                }
+                    System.out.println(selectedFile.getAbsolutePath());
+                    ArticleDatabase.callLoadFile(selectedFile.getAbsolutePath());  // Replace mod
             }
         });
 

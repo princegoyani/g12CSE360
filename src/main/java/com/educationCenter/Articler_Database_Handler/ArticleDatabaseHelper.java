@@ -2,14 +2,18 @@ package com.educationCenter.Articler_Database_Handler;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*; import java.sql.Connection; import java.sql.DriverManager;
 import java.sql.SQLException; import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+
 
 import org.h2.tools.Backup;
 import org.h2.tools.Restore;
@@ -17,7 +21,7 @@ import org.h2.tools.Restore;
 //import Encryption.EncryptionUtils;
 import com.educationCenter.Encryption.EncryptionHelper; import com.educationCenter.Encryption.EncryptionUtils;
 /**
- * <p> DatabaseHelper Class </p>
+ * <p> ArticleDatabaseHelper Class </p>
  * <p> Description: This class is the helper for the ArticleDatabase class,
  *        here database functions are implemented, which can be called from ArticleDatabase.</p>
  * @author ,
@@ -25,9 +29,9 @@ import com.educationCenter.Encryption.EncryptionHelper; import com.educationCent
  * @version 2.00		2024-10-20 Updated function as a database as articles, instead of a user login database.
  */
 	/**********
-	 * DatabaseHelper includes helper functions which allow direct interaction with the database.
+	 * ArticleDatabaseHelper includes helper functions which allow direct interaction with the database.
 	 *
-	 * DatabaseHelper() 			: initializes db connection variables.
+	 * ArticleDatabaseHelper() 			: initializes db connection variables.
 	 * connectToDatabase() 			: attempts to connect to db.
 	 * connectToDatabase(String) 	: attempts to connect to user-defined db.
 	 * createTables()				: sets data format for db.
@@ -41,31 +45,40 @@ import com.educationCenter.Encryption.EncryptionHelper; import com.educationCent
 	 * createArticle()				: default with no sensitive information.
 	 * createArticle() extended		: for when a sensitive key/title/abs is used.
 	 */
-class DatabaseHelper {
+class ArticleDatabaseHelper {
 	static final String JDBC_DRIVER = "org.h2.Driver";   
 	static final String DB_NAME = "Test2003";
 	//static final String DB_URL = "jdbc:h2:~/articleDB/" + DB_NAME;
 	//static final String DB_URL = "jdbc:h2:~/" + DB_NAME;
 	static final String DB_URL = "jdbc:h2:file:./database/" + DB_NAME;
-	//static final String DB_URL = "jdbc:h2:file:database/Test1005";
-	static final String DB_ROOT = "/Users/prince/IdeaProjects/g12CSE360/database/";
+	private static final String DB_ROOT;
+		//static final String DB_URL = "jdbc:h2:file:database/Test1005";
+	static {
+		// Get the current working directory and navigate to "database" within "g12CSE360"
+		Path currentPath = Paths.get("").toAbsolutePath();  // Gets the current directory path
+		DB_ROOT = currentPath.resolve("database").toString() + "/";
+	}
+
+//	static final String DB_ROOT = "/Users/prince/IdeaProjects/g12CSE360/database/";
 	static final String DB_BACKUP_ROOT = "jdbc:h2:file:/backups/";
 	static final String USER = "sa"; static final String PASS = "";
 	private Connection connection = null;
 	private Statement statement = null;
 	private EncryptionHelper encryptionHelper;
-	public DatabaseHelper() { try {encryptionHelper = new EncryptionHelper();}catch (Exception e) {System.out.println(e);}}
+	public ArticleDatabaseHelper() { try {encryptionHelper = new EncryptionHelper();}catch (Exception e) {System.out.println(e);}}
 	
 	// connectToDatabase() allows connection with default article database file.
-	public void connectToDatabase() throws SQLException {
+	public void artilceConnectToDatabase() throws SQLException {
 		try {
 			Class.forName(JDBC_DRIVER); System.out.println("Connecting to Article Database...");
-			connection = DriverManager.getConnection(DB_URL, USER, PASS); statement = connection.createStatement();
-			createTables();
+			connection = DriverManager.getConnection(DB_URL, USER, PASS);
+			statement = connection.createStatement();
+			articleCreateTables();
+			System.gc();
 		} catch (ClassNotFoundException e) { System.err.println("JDBC Driver not found: " + e.getMessage()); }
 	}
 	// connectToDatabase(string) allows connection with a database other than default database.
-	public void connectToDatabase(String loadFileURL) throws SQLException {
+	public void artilceConnectToDatabase(String loadFileURL) throws SQLException {
 		Connection backupConnection = null; // New connection for backup
 		try {
 			Class.forName(JDBC_DRIVER);
@@ -82,7 +95,7 @@ class DatabaseHelper {
 		}
 	}
 	// createTables() creates the database correct form for article data.
-	private void createTables() throws SQLException {
+	private void articleCreateTables() throws SQLException {
 		String userTable = "CREATE TABLE IF NOT EXISTS cse360articles ("
 				+ "id LONG AUTO_INCREMENT UNIQUE PRIMARY KEY, " + "creationID LONG, " // unique article ID thru backups
 				+ "title VARCHAR(255), " + "body VARCHAR(255), "
@@ -106,15 +119,28 @@ class DatabaseHelper {
 	}
 
 	// backupToFile() backup current database with user-specified filename.
-	public void backupToFile(String backupFilename) throws SQLException {
-		System.out.println("Attempting backup...");
-		//String backupPath = "C:\\Users\\KT_Laptop\\eclipse-workspace\\HW6\\backups\\" + backupFilename + ".zip";
+	public void backupToFile(String backupFilename) throws Exception {
 		String backupPath = "./backups/" + backupFilename + ".zip";
+		System.out.println("Attempting backup...");
 
-		this.closeConnection(); Backup.execute(backupPath,"./database/", DB_NAME, false); this.connectToDatabase(); System.out.println("Backup completed.");
+		// Close connection before backup to avoid locking issues
+		this.articleCloseConnection();
+
+		try {
+			Thread.sleep(5000);
+			Backup.execute(backupPath, "./database/", DB_NAME, false);
+			Thread.sleep(3000);
+			System.out.println("Backup complete.");
+		} catch (Exception e) {
+			System.out.println("Backup failed: " + e);
+		} finally {
+			// Reconnect after backup completes
+			this.artilceConnectToDatabase();
+		}
 	}
-	//
-	public void backupByGrouping(String backupFilename, String groupingIDs) throws Exception {
+
+
+		public void backupByGrouping(String backupFilename, String groupingIDs) throws Exception {
 		backupToFile("full_backup"); // Backup to temp
 
 		//  Delete articles
@@ -152,29 +178,47 @@ class DatabaseHelper {
 	// saveDatabase() save backup of current database.
 	public void saveDatabase() throws SQLException {
 		String backupPath = "C:\\Users\\KT_Laptop\\eclipse-workspace\\HW6\\backups\\exitSave.zip";
-		this.closeConnection(); Backup.execute(backupPath, DB_ROOT, DB_NAME, false);
+		this.articleCloseConnection(); Backup.execute(backupPath, DB_ROOT, DB_NAME, false);
 	}
 	// loadFromFile() load database from user-specified file.
 	public void loadFromFile(String loadDb) throws Exception {
-		String sql = "SELECT * FROM cse360articles"; Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
-		System.out.println("Resetting current articles to empty before loading backup:"); // Before loading new database, current database set to empty.
-		while( rs.next() ) {
-			int id  = rs.getInt("id"); String sqlDel = "DELETE FROM cse360articles WHERE id = ?";
-			PreparedStatement stmtDel = connection.prepareStatement(sqlDel);
-			stmtDel.setInt(1, id); stmtDel.executeUpdate();
-			System.out.printf("Article %2d set to empty.\n", id);
-		} // Current database confirmed as empty, then new database will be loaded.
-		displayArticles(); this.closeConnection(); Restore.execute(loadDb, DB_ROOT, DB_NAME);
-		System.out.println("Existing database disconnected, backup database loaded from file."); connectToDatabase();
+		System.out.println("Resetting current articles to empty before loading backup...");
+
+		// Empty current database
+		String sqlDeleteAll = "DELETE FROM cse360articles";
+		try (Statement stmt = connection.createStatement()) {
+			stmt.executeUpdate(sqlDeleteAll);
+			System.out.println("Current database cleared.");
+		}
+
+		// Close connection before restore to avoid locking issues
+		this.articleCloseConnection();
+
+		try {
+			Thread.sleep(5000);
+			Restore.execute(loadDb, DB_ROOT, DB_NAME);
+			Thread.sleep(3000);
+			System.out.println("Restore complete.");
+		} catch (Exception e) {
+			System.err.println("Error while loading from file: " + e.getMessage());
+		} finally {
+			// Reconnect after restore completes
+			this.artilceConnectToDatabase();
+		}
+
+		displayArticles();
 	}
-	//
+
+		//
 	//
 	private String extractBackup(String zipFilePath) throws IOException {
-		String tempDir = "./backups/extracted";
+		String tempDir = Paths.get("").toAbsolutePath() + "/backups/extracted";
 		File dir = new File(tempDir);
 		if (!dir.exists()) {
 			dir.mkdirs(); // Create directory if it does not exist
 		}
+		//deleteAllFiles(tempDir);
+
 		try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(Paths.get(zipFilePath)))) {
 			ZipEntry zipEntry;
 			while ((zipEntry = zis.getNextEntry()) != null) {
@@ -189,7 +233,23 @@ class DatabaseHelper {
 				zis.closeEntry();
 			}
 		}
-		return tempDir + "/" + DB_NAME;
+		return tempDir + "/" + DB_NAME ;
+	}
+
+	public static void deleteAllFiles(String folderPath) throws IOException {
+		Path directory = Paths.get(folderPath);
+
+		// Single command to delete all files and directories in the folder
+		Files.walk(directory)
+				.sorted(Comparator.reverseOrder()) // Sort in reverse order to delete files before directories
+				.forEach(path -> {
+					try {
+						Files.deleteIfExists(path);
+						System.out.println("Deleted: " + path);
+					} catch (IOException e) {
+						System.err.println("Failed to delete: " + path + " due to " + e.getMessage());
+					}
+				});
 	}
 	//
 	//
@@ -199,9 +259,10 @@ class DatabaseHelper {
 		String extractedDbPath = extractBackup(loadDb); // Extract to a temporary path
 
 		// Connect to the backup database
-		String tempDbPath = DB_URL+DB_NAME;
+		String tempDbPath = "jdbc:h2:file:" + extractedDbPath;
 		Connection backupConnection = null;
 		try {
+			Class.forName("org.h2.Driver");
 			backupConnection = DriverManager.getConnection(tempDbPath, USER, PASS);
 			String sql = "SELECT * FROM cse360articles";
 
@@ -944,13 +1005,6 @@ class DatabaseHelper {
 		}
 	}
 
-
-
-
-
-
-
-
 /*
 	public void updateArticleByKey(int key, String newTitle, String newBody, String newAuthor, String newAbstract, String newKeywords, String newGrouping) throws Exception {
 		// First, check if the article exists
@@ -997,8 +1051,25 @@ class DatabaseHelper {
 	}
 */
 		// closeConnection() : handles disconnection of database.
-	public void closeConnection() {
-		try { if (statement!=null) statement.close(); } catch (SQLException se2) { se2.printStackTrace(); }
-		try { if (connection!=null) connection.close(); } catch (SQLException se) { se.printStackTrace(); }
+public void articleCloseConnection() {
+	try {
+		if (statement != null && !statement.isClosed()) {
+			this.statement.close();
+			System.out.println("Article closed.");
+		}
+		if (connection != null && !connection.isClosed()) {
+			this.connection.close();
+			System.out.println("Database Article closed.");
+		}
+		connection = null;
+		statement = null;
+		System.gc();
+	} catch (Exception se) {
+		se.printStackTrace();
 	}
+
+
 }
+
+
+	}
