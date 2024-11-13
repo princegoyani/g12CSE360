@@ -213,6 +213,7 @@ class ArticleDatabaseHelper {
 	//
 	private String extractBackup(String zipFilePath) throws IOException {
 		String tempDir = Paths.get("").toAbsolutePath() + "/backups/extracted";
+		deleteAllFiles(tempDir);
 		File dir = new File(tempDir);
 		if (!dir.exists()) {
 			dir.mkdirs(); // Create directory if it does not exist
