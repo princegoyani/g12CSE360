@@ -198,8 +198,8 @@ public class App {
 		datas=null;
 		activeRole=null;
 		}
-	public static String returnUserId(){
-		return USER_DATABASE_HELPER.getUserId(username);
+	public static String returnUserId(String user){
+		return USER_DATABASE_HELPER.getUserId(user);
 	}
     
 	 public static boolean setupAdministrator(String userName, String passWord) {

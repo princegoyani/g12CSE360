@@ -211,16 +211,30 @@ public class LoginPage extends Application {
         groupField.setPromptText("Enter Group");
 
         Button addAccess = new Button("Add Access");
-        //addAccess.setOnAction(e -> //);
-
         Button viewAccess = new Button("View Access");
-        //viewAccess.setOnAction(e -> //);
-
         Button removeAccess = new Button("Remove Access");
-        //removeAccess.setOnAction(e -> //);
 
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> start(primaryStage));
+
+        addAccess.setOnAction(e -> {
+            if(userField != null && groupField != null) {
+                String userId = App.returnUserId(userField.getText());
+                ArticleDatabase.addAccessForGroup(userId, groupField.getText());
+            }
+        });
+
+        removeAccess.setOnAction(e -> {
+            if(userField != null && groupField != null) {
+                String userId = App.returnUserId(userField.getText());
+                ArticleDatabase.deleteAccessForGroup(userId, groupField.getText());
+            }
+        });
+
+        viewAccess.setOnAction(e -> {
+                    showAcesssPage(primaryStage,userField.getText());
+        });
+
 
         HBox accessButtons = new HBox(10, addAccess, viewAccess, removeAccess);
         VBox modifyGroupPage = new VBox(10, userField, groupField, accessButtons, backButton);
@@ -230,6 +244,31 @@ public class LoginPage extends Application {
         primaryStage.show();
 
     }
+
+    private void showAcesssPage(Stage primaryStage,String username) {
+        Label listUsersLabel = new Label("List of Access for "  + username);
+        Button backButton = new Button("Back");
+
+        ListView<String> ArticleListView = new ListView<>();
+        String[] datas = ArticleDatabase.returnGroupsFromUser(username);
+        if (datas != null) {
+            System.out.println(datas);
+            for (String data : datas) {
+                ArticleListView.getItems().add(data);
+            }
+
+            // Handle click events on the user list items
+
+            backButton.setOnAction(e -> start(primaryStage));
+
+            VBox listUsersLayout = new VBox(10, listUsersLabel, ArticleListView, backButton);
+            Scene listUsersScene = new Scene(listUsersLayout, 300, 300);
+
+            primaryStage.setScene(listUsersScene);
+            primaryStage.show();
+        }
+    }
+
 
     // Method to navigate to the invite user page
     private void showInviteUserPage(Stage primaryStage) {

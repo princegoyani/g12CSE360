@@ -1,5 +1,7 @@
 package com.educationCenter.Articler_Database_Handler;
 
+import com.educationCenter.App;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,13 +19,10 @@ public class ArticleDatabase {
 	public static void connect_dataBase() {
 		articleDatabaseHelper = new ArticleDatabaseHelper();
 		try {
-			articleDatabaseHelper.artilceConnectToDatabase();
+			articleDatabaseHelper.articleConnectToDatabase();
 		} catch (SQLException e) {
 			System.err.println("Database error: " + e.getMessage());
 			e.printStackTrace();
-		} finally {
-			System.out.println("Pass back to Help System...");
-			articleDatabaseHelper.articleCloseConnection();
 		}
 	}
 
@@ -68,25 +67,21 @@ public class ArticleDatabase {
 		// instructor to student
 		// admin to instructor
 		try{
-			String[] articlesId = articleDatabaseHelper.returnArticlesInGroup(groupName);
+			articleDatabaseHelper.addSpecialAccess(userid,groupName,"Instructor");
 
-			for (int i = 0; i < articlesId.length; i++) {
-				articleDatabaseHelper.addSpecialAccess(userid,articlesId[i],"Instructor");
-			}
 
 			return true;
 		}catch (Exception e){
-			System.out.println("Database error: " + e.getMessage());
+			System.out.println("Database error: " + e);
 		}
 		return false;
 	}
 
 	public static boolean deleteAccessForGroup(String userid,String groupName){
 		try{
-			String[] articlesId = articleDatabaseHelper.returnArticlesInGroup(groupName);
-			for (int i = 0; i < articlesId.length; i++) {
-				articleDatabaseHelper.deleteSpecialAccess(userid,articlesId[i]);
-			}
+
+			articleDatabaseHelper.deleteSpecialAccess(userid,groupName);
+
 			return true;
 		} catch (Exception e) {
 			System.out.println("Database error: " + e.getMessage());
@@ -249,6 +244,16 @@ public class ArticleDatabase {
 			}
 		}
 	}
+
+	public static String[] returnGroupsFromUser(String username){
+		try{
+			int userId = Integer.parseInt(App.returnUserId(username));
+			return articleDatabaseHelper.returnGroupFromUser(userId);
+		} catch (Exception e) {
+            System.out.println("Error in returnGroupsFromUser");
+        }
+		return null;
+    }
 
 	// DIRECT ACCESS CALLS FROM HELP SYSTEM:
 	// make direct access for all menu options 1-6 (to be given to users by user-account programmer)

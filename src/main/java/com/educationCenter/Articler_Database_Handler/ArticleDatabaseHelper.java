@@ -59,7 +59,6 @@ class ArticleDatabaseHelper {
 		DB_ROOT = currentPath.resolve("database").toString() + "/";
 	}
 
-//	static final String DB_ROOT = "/Users/prince/IdeaProjects/g12CSE360/database/";
 	static final String DB_BACKUP_ROOT = "jdbc:h2:file:/backups/";
 	static final String USER = "sa"; static final String PASS = "";
 	private Connection connection = null;
@@ -68,7 +67,7 @@ class ArticleDatabaseHelper {
 	public ArticleDatabaseHelper() { try {encryptionHelper = new EncryptionHelper();}catch (Exception e) {System.out.println(e);}}
 	
 	// connectToDatabase() allows connection with default article database file.
-	public void artilceConnectToDatabase() throws SQLException {
+	public void articleConnectToDatabase() throws SQLException {
 		try {
 			Class.forName(JDBC_DRIVER); System.out.println("Connecting to Article Database...");
 			connection = DriverManager.getConnection(DB_URL, USER, PASS);
@@ -79,7 +78,7 @@ class ArticleDatabaseHelper {
 		} catch (ClassNotFoundException e) { System.err.println("JDBC Driver not found: " + e.getMessage()); }
 	}
 	// connectToDatabase(string) allows connection with a database other than default database.
-	public void artilceConnectToDatabase(String loadFileURL) throws SQLException {
+	public void articleConnectToDatabase(String loadFileURL) throws SQLException {
 		Connection backupConnection = null; // New connection for backup
 		try {
 			Class.forName(JDBC_DRIVER);
@@ -94,6 +93,11 @@ class ArticleDatabaseHelper {
 				backupConnection.close();
 			}
 		}
+	}
+	private void deleteTable() throws SQLException {
+		String sql = "DROP TABLE IF EXISTS cse360access";
+		PreparedStatement preparedStatement = connection.prepareStatement(sql);
+		preparedStatement.execute();
 	}
 	// createTables() creates the database correct form for article data.
 	private void articleCreateTables() throws SQLException {
@@ -124,12 +128,23 @@ class ArticleDatabaseHelper {
 		String specialAccessTable = "CREATE TABLE IF NOT EXISTS cse360access ("
 				+ "id LONG AUTO_INCREMENT UNIQUE PRIMARY KEY, "
 				+"userId INT, "
-				+ "ariticleId LONG, "
+				+ "groupName VARCHAR(255) DEFAULT '0', "
 				+ "accessType VARCHAR(255) DEFAULT '0')";
 
 		statement.execute(specialAccessTable);
 
 	}
+		public void addSpecialAccess(String userId,String groupName, String accessType) throws SQLException{
+			String sql = "INSERT INTO cse360access (userId,groupName,accessType) VALUES(?,?,?)";
+			try(PreparedStatement pstmt = connection.prepareStatement(sql)) {
+				pstmt.setInt(1, Integer.parseInt(userId));
+				pstmt.setString(2, groupName);
+				pstmt.setString(3, accessType);
+
+				pstmt.executeUpdate();
+
+			}
+		}
 
 	// backupToFile() backup current database with user-specified filename.
 	public void backupToFile(String backupFilename) throws Exception {
@@ -148,7 +163,7 @@ class ArticleDatabaseHelper {
 			System.out.println("Backup failed: " + e);
 		} finally {
 			// Reconnect after backup completes
-			this.artilceConnectToDatabase();
+			this.articleConnectToDatabase();
 		}
 	}
 
@@ -216,7 +231,7 @@ class ArticleDatabaseHelper {
 			System.err.println("Error while loading from file: " + e.getMessage());
 		} finally {
 			// Reconnect after restore completes
-			this.artilceConnectToDatabase();
+			this.articleConnectToDatabase();
 		}
 
 		displayArticles();
@@ -824,7 +839,7 @@ class ArticleDatabaseHelper {
 		}
 	//
 	public String[] returnArticlesInGroup(String GroupName){
-		String sql = "SELECT id FROM articles WHERE grouping=?";
+		String sql = "SELECT id FROM cse360articles WHERE grouping=?";
 
 		try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
 			preparedStatement.setString(1, GroupName);
@@ -840,7 +855,27 @@ class ArticleDatabaseHelper {
 		return null;
     }
 
-	public void displayArticlesByGrouping(String grouping) throws Exception {
+	public String[] returnGroupFromUser(int userid){
+		String sql = "SELECT * FROM cse360access WHERE userId=?";
+		List<String> usersList = new ArrayList<>();
+		try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+			preparedStatement.setInt(1, userid);
+			ResultSet rs = preparedStatement.executeQuery();
+
+			while (rs.next()){
+				String groupName = rs.getString("groupName");
+					if (!(usersList.contains(groupName))) {
+						usersList.add(groupName);
+				}
+			}
+		} catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+			return usersList.toArray(new String[0]);
+
+        }
+
+        public void displayArticlesByGrouping(String grouping) throws Exception {
 		String sql = "SELECT * FROM cse360articles";
 		Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
 		// User Input Of Groups Into Individual Groups
@@ -923,36 +958,25 @@ class ArticleDatabaseHelper {
 		return articleFound;
 	}
 	public String[] checkSpecialAcesss(String userId) throws SQLException{
-			String sql = "SELECT * FROM cse360 Where userId = ?";
+			String sql = "SELECT * FROM cse360access Where userId = ?";
 
-			List<String> articleIdsList = new ArrayList<>();
+			List<String> groupNameList = new ArrayList<>();
 			try(PreparedStatement pstmt = connection.prepareStatement(sql)) {
 				pstmt.setString(1, userId);
 				ResultSet rs = pstmt.executeQuery();
 				if (rs.next()) {
-					articleIdsList.add(rs.getString("articleId"));
+					groupNameList.add(rs.getString("groupName"));
 				}
-				return articleIdsList.toArray(new String[articleIdsList.size()]);
+				return groupNameList.toArray(new String[groupNameList.size()]);
 			}
 		}
 
-	public void addSpecialAccess(String userId,String articleId, String accessType) throws SQLException{
-		String sql = "INSERT INTO cse360articles VALUES(?,?,?)";
+
+	public void deleteSpecialAccess(String userId,String groupName) throws SQLException{
+		String sql = "DELETE FROM cse360access WHERE userId = ? AND groupName = ?";
 		try(PreparedStatement pstmt = connection.prepareStatement(sql)) {
-			pstmt.setString(1, userId);
-			pstmt.setString(2, articleId);
-			pstmt.setString(3, accessType);
-
-			pstmt.executeUpdate();
-
-		}
-	}
-
-	public void deleteSpecialAccess(String userId,String articleId) throws SQLException{
-		String sql = "DELETE FROM cse360articles WHERE userId = ? AND articleID = ?";
-		try(PreparedStatement pstmt = connection.prepareStatement(sql)) {
-			pstmt.setString(1, userId);
-			pstmt.setString(2, articleId);
+			pstmt.setInt(1, Integer.parseInt(userId));
+			pstmt.setString(2, groupName);
 
 			pstmt.executeUpdate();
 		}
