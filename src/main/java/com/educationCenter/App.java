@@ -512,6 +512,23 @@ public class App {
 				}
 			}
 
-		
+	public static void sendGenericMessage(String message) {
+		if (message != null && !message.isEmpty()) {
+			System.out.println("Sending generic message to help system: " + message);
+			//possibly add code to save the message to a database/log it
+		} else {
+			System.out.println("Message is empty. Cannot send.");
+		}
+	}
+
+	public static void sendSpecificMessage(String message) {
+		if (message != null && !message.isEmpty()) {
+			System.out.println("Sending specific message to help system: " + message);
+			//also maybe add to save message to database/log it
+		} else {
+			System.out.println("Message is empty. Cannot send.");
+		}
+	}
+
 
 }

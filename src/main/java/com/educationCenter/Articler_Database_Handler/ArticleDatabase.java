@@ -1,6 +1,9 @@
 package com.educationCenter.Articler_Database_Handler;
 
-import java.sql.SQLException; import java.util.Scanner;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 public class ArticleDatabase {
 	public static ArticleDatabaseHelper articleDatabaseHelper; 					// Instantiate ArticleDatabaseHelper.
@@ -11,13 +14,54 @@ public class ArticleDatabase {
 		defaultFlow();
 	}
 
-	public static void connect_dataBase(){
-		articleDatabaseHelper = new ArticleDatabaseHelper(); //System.out.println("Start ArticleDatabse.\n");
-		try { articleDatabaseHelper.artilceConnectToDatabase();
-		} catch (SQLException e) { System.err.println("Database error: " + e.getMessage()); e.printStackTrace(); }
-		finally {
-			System.out.println("Pass back to Help System..."); //System.out.println("Database closed, goodbye."); articleDatabaseHelper.closeConnection();
+	public static void connect_dataBase() {
+		articleDatabaseHelper = new ArticleDatabaseHelper();
+		try {
+			articleDatabaseHelper.artilceConnectToDatabase();
+		} catch (SQLException e) {
+			System.err.println("Database error: " + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			System.out.println("Pass back to Help System...");
+			articleDatabaseHelper.articleCloseConnection();
 		}
+	}
+
+	// New searchArticles method to filter articles based on query, level, and group
+	public static String[][] searchArticles(String query, String level, String group) {
+		List<String[]> results = new ArrayList<>();
+
+		try {
+			// Fetch all articles from the database
+			String[][] allArticles = articleDatabaseHelper.returnListArticles();
+
+			for (String[] article : allArticles) {
+				String articleTitle = article[1];
+				String articleAuthor = article[2];
+				String articleAbstract = article[3];
+				String articleLevel = article[4];
+				String articleGroup = article[5]; // Assuming article[5] represents the group
+
+				// Check if the article matches the search criteria
+				boolean matchesQuery = query.isEmpty() ||
+						articleTitle.contains(query) ||
+						articleAuthor.contains(query) ||
+						articleAbstract.contains(query);
+
+				boolean matchesLevel = level.equals("All") || articleLevel.equalsIgnoreCase(level);
+				boolean matchesGroup = group.equals("All") || articleGroup.equalsIgnoreCase(group);
+
+				// If the article matches all criteria, add it to results
+				if (matchesQuery && matchesLevel && matchesGroup) {
+                    results.add(article);
+                }
+			}
+		} catch (Exception e) {
+			System.out.println("Error searching articles: " + e.getMessage());
+		}
+
+		// Convert results list to a 2D array and return it
+		return results.toArray(new String[0][]);
 	}
 
 	// THIS function might not be necessary / redundant
