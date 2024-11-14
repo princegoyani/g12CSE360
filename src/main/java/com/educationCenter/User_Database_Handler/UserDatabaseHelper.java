@@ -49,9 +49,24 @@ public class UserDatabaseHelper {
 				+ "lastName VARCHAR(20), "
 				+ "oneTimePassword VARCHAR(100)"
 				+")";
+
 		statement.execute(userTable);
 	}
+	public String getUserId(String username){
+		String query = "SELECT id FROM cse360users WHERE username = ?";
 
+		try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+			preparedStatement.setString(1, username);
+			ResultSet resultSet = preparedStatement.executeQuery();
+			if (resultSet.next()) {
+				return resultSet.getString("id");
+			}
+
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return null;
+	}
 
 	// Check if the database is empty
 	public boolean isDatabaseEmpty() throws SQLException {
@@ -62,6 +77,7 @@ public class UserDatabaseHelper {
 		}
 		return true;
 	}
+
 
 	public void register(String username, String password, String[] role) throws SQLException {
 		String insertUser = "INSERT INTO cse360users (username, password, roles ) VALUES (?, ?, ?)";

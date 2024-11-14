@@ -20,6 +20,35 @@ public class ArticleDatabase {
 		}
 	}
 
+	public static boolean addAccessForGroup(String userid,String groupName){
+		// instructor to student
+		// admin to instructor
+		try{
+			String[] articlesId = articleDatabaseHelper.returnArticlesInGroup(groupName);
+
+			for (int i = 0; i < articlesId.length; i++) {
+				articleDatabaseHelper.addSpecialAccess(userid,articlesId[i],"Instructor");
+			}
+
+			return true;
+		}catch (Exception e){
+			System.out.println("Database error: " + e.getMessage());
+		}
+		return false;
+	}
+
+	public static boolean deleteAccessForGroup(String userid,String groupName){
+		try{
+			String[] articlesId = articleDatabaseHelper.returnArticlesInGroup(groupName);
+			for (int i = 0; i < articlesId.length; i++) {
+				articleDatabaseHelper.deleteSpecialAccess(userid,articlesId[i]);
+			}
+			return true;
+		} catch (Exception e) {
+			System.out.println("Database error: " + e.getMessage());
+		}
+		return false;
+	}
 	// THIS function might not be necessary / redundant
  	// Helper Class For Menu Calls: Silent/No Output, passed menu choice arg from caller.
 	public static void callMenu(String menuOption) throws Exception {
@@ -200,6 +229,7 @@ public class ArticleDatabase {
 		public static String[][] returnListArticles() {
 
 			try {
+
                 return articleDatabaseHelper.returnListArticles();
             }catch(Exception e) {
 			System.out.println(e.getMessage());

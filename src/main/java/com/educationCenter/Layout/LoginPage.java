@@ -14,7 +14,6 @@ import javafx.stage.FileChooser;
 import java.io.File;
 import java.util.Objects;
 
-import com.educationCenter.App;
 
 public class LoginPage extends Application {
     // A list to store created users
@@ -26,12 +25,10 @@ public class LoginPage extends Application {
         if (App.connect()) {
             ArticleDatabase.connect_dataBase();
             if (App.getActiveRole() != null) {
-                if (App.getActiveRole().equals("admin")) {
-                    showAdminHomepage(primaryStage);
-                } else if (App.getActiveRole().equals("instructor")) {
-                    showInstructorPage(primaryStage);
-                } else if (App.getActiveRole().equals("student")) {
-                    showStudentPage(primaryStage);
+                switch (App.getActiveRole()) {
+                    case "admin" -> showAdminHomepage(primaryStage);
+                    case "instructor" -> showInstructorPage(primaryStage);
+                    case "student" -> showStudentPage(primaryStage);
                 }
             }else {
 
@@ -41,7 +38,7 @@ public class LoginPage extends Application {
                     showLoginPage(primaryStage);
                 }
             }
-        };
+        }
     }
 
     private void showLoginPage(Stage primaryStage) {
@@ -59,9 +56,7 @@ public class LoginPage extends Application {
         Label statusMessage = new Label("");
 
         // Adding action to the login button
-        loginButton.setOnAction(e -> {
-            manageLogin(primaryStage,userTextField.getText(),passwordField.getText(), statusMessage);
-        });
+        loginButton.setOnAction(e -> manageLogin(primaryStage,userTextField.getText(),passwordField.getText(), statusMessage));
 
         // Action for new user button
 
@@ -178,21 +173,13 @@ public class LoginPage extends Application {
         Button viewArticle = new Button("View Article");
         Button deleteArticle = new Button("Delete Article");
 
-        createArticle.setOnAction(e -> {
-            showCreateArticlePage(primaryStage);
-        });
+        createArticle.setOnAction(e -> showCreateArticlePage(primaryStage));
 
-        editArticle.setOnAction(e -> {
-            showlistArticlePage(primaryStage,"edit");;
-        });
+        editArticle.setOnAction(e -> showlistArticlePage(primaryStage,"edit"));
 
-        viewArticle.setOnAction(e -> {
-            showlistArticlePage(primaryStage,"view");
-        });
+        viewArticle.setOnAction(e -> showlistArticlePage(primaryStage,"view"));
 
-        deleteArticle.setOnAction(e -> {
-            showdeleteArticlePage(primaryStage);
-        });
+        deleteArticle.setOnAction(e -> showdeleteArticlePage(primaryStage));
 
 
 //        backupData.setOnAction(e -> {
@@ -268,7 +255,7 @@ public class LoginPage extends Application {
             } else {
                 if (App.deleteUser(username)){
                     System.out.println("User " + username + " deleted.");
-                };
+                }
             }
         });
 
@@ -316,8 +303,7 @@ public class LoginPage extends Application {
         ListView<String> userListView = new ListView<>();
         String[][] datas = App.listOfUser();
 
-        System.out.println(datas);
-        for (int i = 0; i< datas.length;i++) {
+        for (int i = 0; i< Objects.requireNonNull(datas).length; i++) {
             userListView.getItems().add(datas[i][0] + " - " + datas[i][1] + " - " + datas[i][3].substring(1,datas[i][3].length() -1));
         }
 
@@ -655,10 +641,7 @@ public class LoginPage extends Application {
                 groupDialog.setHeaderText("Enter the group ID(s) to backup:");
                 groupDialog.setContentText("Group ID(s):");
 
-                groupDialog.showAndWait().ifPresent(groupIds -> {
-                    ArticleDatabase.callBackupByGrouping(fileName , groupIds);
-
-                });
+                groupDialog.showAndWait().ifPresent(groupIds -> ArticleDatabase.callBackupByGrouping(fileName , groupIds));
             }
         });
 

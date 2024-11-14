@@ -11,6 +11,7 @@ import com.educationCenter.User_Database_Handler.UserDatabaseHelper;
 public class App {
 	private static final UserDatabaseHelper USER_DATABASE_HELPER = new UserDatabaseHelper();
 	private static final Scanner scanner = new Scanner(System.in);
+	private static String userId ;
 	private static String username;
 	private static String password;
 	private static String activeRole;
@@ -114,6 +115,7 @@ public class App {
 	}
 
 
+
 	public static boolean createUser(String testEmail,String testRole){
 
 		String[] user ;
@@ -196,6 +198,9 @@ public class App {
 		datas=null;
 		activeRole=null;
 		}
+	public static String returnUserId(){
+		return USER_DATABASE_HELPER.getUserId(username);
+	}
     
 	 public static boolean setupAdministrator(String userName, String passWord) {
 		 try {

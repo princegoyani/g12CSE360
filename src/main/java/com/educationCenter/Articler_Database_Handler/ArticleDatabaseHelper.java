@@ -74,6 +74,7 @@ class ArticleDatabaseHelper {
 			connection = DriverManager.getConnection(DB_URL, USER, PASS);
 			statement = connection.createStatement();
 			articleCreateTables();
+			specialAccessTable();
 			System.gc();
 		} catch (ClassNotFoundException e) { System.err.println("JDBC Driver not found: " + e.getMessage()); }
 	}
@@ -115,7 +116,19 @@ class ArticleDatabaseHelper {
 				//    or merge backed-up copies with current articles (when ID matches, backed-up copy not added).
 				//
 				// if sensitive-keys *matches* then display normal title, otherwise display sensitive-title/des
+
 		statement.execute(userTable);
+	}
+
+	private void specialAccessTable() throws SQLException {
+		String specialAccessTable = "CREATE TABLE IF NOT EXISTS cse360access ("
+				+ "id LONG AUTO_INCREMENT UNIQUE PRIMARY KEY, "
+				+"userId INT, "
+				+ "ariticleId LONG, "
+				+ "accessType VARCHAR(255) DEFAULT '0')";
+
+		statement.execute(specialAccessTable);
+
 	}
 
 	// backupToFile() backup current database with user-specified filename.
@@ -549,7 +562,9 @@ class ArticleDatabaseHelper {
 //			Arrays.fill(decryptedKeywords, '0'); Arrays.fill(decryptedReferences, '0');
 		}
 	}
-		public String[][] returnListArticles() throws Exception{
+
+
+	public String[][] returnListArticles() throws Exception{
 			if (isDatabaseEmpty() == true) { System.out.println("There are no articles in the database."); return null; }
 			String sql = "SELECT * FROM cse360articles";
 			Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
@@ -719,7 +734,8 @@ class ArticleDatabaseHelper {
 //				Arrays.fill(decryptedKeywords, '0'); Arrays.fill(decryptedReferences, '0');
 			}
 		} if (articleFound == false) System.out.println("No article was found with that ID.");
-	}	
+	}
+
 	//
 	public String[] returnArticle(int key) throws Exception{
 			String sql = "SELECT * FROM cse360articles";
@@ -807,6 +823,23 @@ class ArticleDatabaseHelper {
 			return null;
 		}
 	//
+	public String[] returnArticlesInGroup(String GroupName){
+		String sql = "SELECT id FROM articles WHERE grouping=?";
+
+		try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+			preparedStatement.setString(1, GroupName);
+			ResultSet rs = preparedStatement.executeQuery();
+			List<String> usersList = new ArrayList<>();
+			if (rs.next()){
+				usersList.add(rs.getString("id"));
+			}
+			return usersList.toArray(new String[usersList.size()]);
+		} catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+		return null;
+    }
+
 	public void displayArticlesByGrouping(String grouping) throws Exception {
 		String sql = "SELECT * FROM cse360articles";
 		Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
@@ -889,6 +922,43 @@ class ArticleDatabaseHelper {
 		}
 		return articleFound;
 	}
+	public String[] checkSpecialAcesss(String userId) throws SQLException{
+			String sql = "SELECT * FROM cse360 Where userId = ?";
+
+			List<String> articleIdsList = new ArrayList<>();
+			try(PreparedStatement pstmt = connection.prepareStatement(sql)) {
+				pstmt.setString(1, userId);
+				ResultSet rs = pstmt.executeQuery();
+				if (rs.next()) {
+					articleIdsList.add(rs.getString("articleId"));
+				}
+				return articleIdsList.toArray(new String[articleIdsList.size()]);
+			}
+		}
+
+	public void addSpecialAccess(String userId,String articleId, String accessType) throws SQLException{
+		String sql = "INSERT INTO cse360articles VALUES(?,?,?)";
+		try(PreparedStatement pstmt = connection.prepareStatement(sql)) {
+			pstmt.setString(1, userId);
+			pstmt.setString(2, articleId);
+			pstmt.setString(3, accessType);
+
+			pstmt.executeUpdate();
+
+		}
+	}
+
+	public void deleteSpecialAccess(String userId,String articleId) throws SQLException{
+		String sql = "DELETE FROM cse360articles WHERE userId = ? AND articleID = ?";
+		try(PreparedStatement pstmt = connection.prepareStatement(sql)) {
+			pstmt.setString(1, userId);
+			pstmt.setString(2, articleId);
+
+			pstmt.executeUpdate();
+		}
+	}
+
+
 	public int checkSensByKey(int key) throws Exception{
 		String sql = "SELECT * FROM cse360articles";
 		Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
