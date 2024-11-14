@@ -21,9 +21,6 @@ public class ArticleDatabase {
 		} catch (SQLException e) {
 			System.err.println("Database error: " + e.getMessage());
 			e.printStackTrace();
-		} finally {
-			System.out.println("Pass back to Help System...");
-			articleDatabaseHelper.articleCloseConnection();
 		}
 	}
 

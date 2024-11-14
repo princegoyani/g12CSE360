@@ -31,7 +31,7 @@ public class LoginPage extends Application {
                 } else if (App.getActiveRole().equals("instructor")) {
                     showInstructorPage(primaryStage);
                 } else if (App.getActiveRole().equals("student")) {
-                    showStudentPage(primaryStage);
+                    showHelpPage(primaryStage);
                 }
             }else {
 
@@ -138,7 +138,7 @@ public class LoginPage extends Application {
                 showAdminHomepage(primaryStage);
                 break;
             case "student":
-                showStudentPage(primaryStage);
+                showHelpPage(primaryStage);
                 break;
             case "instructor":
                 showInstructorPage(primaryStage);
@@ -548,57 +548,81 @@ public class LoginPage extends Application {
         enterInviteCodeButton.setOnAction(e -> {
             String email = emailField.getText();
             String inviteCode = inviteField.getText();
-            String check = App.loginInvitedUser(email,inviteCode);
+            String check = App.loginInvitedUser(email, inviteCode);
             if (check.equals("new")) {
-                showNewUserCreation(primaryStage,email);
-            }else if(check.equals("reset")){
-                showResetPassword(primaryStage,email);
-            }
-            else {
+                showNewUserCreation(primaryStage, email);
+            } else if (check.equals("reset")) {
+                showResetPassword(primaryStage, email);
+            } else {
                 System.out.println("Something Failed!");
             }
         });
 
         backButton.setOnAction(e -> start(primaryStage));
 
-        VBox inviteLayout = new VBox(10,emailLabel,emailField, inviteLabel, inviteField, enterInviteCodeButton, backButton);
+        VBox inviteLayout = new VBox(10, emailLabel, emailField, inviteLabel, inviteField, enterInviteCodeButton, backButton);
         Scene inviteScene = new Scene(inviteLayout, 300, 250);
 
         primaryStage.setScene(inviteScene);
         primaryStage.show();
     }
 
-    private void showStudentPage(Stage primaryStage) {
-        // Labels and Text Area
+    private void showHelpPage(Stage primaryStage) {
         Label messageLabel = new Label("Message to Help System:");
         TextArea messageArea = new TextArea();
+        messageArea.setPrefRowCount(3); // Limit message area height
 
-        // Generic and specific message buttons
+        // Buttons for sending generic and specific messages
         Button sendGenericMessageButton = new Button("Send Generic Message");
         sendGenericMessageButton.setOnAction(e -> sendGenericMessage(messageArea.getText()));
 
         Button sendSpecificMessageButton = new Button("Send Specific Message");
         sendSpecificMessageButton.setOnAction(e -> sendSpecificMessage(messageArea.getText()));
 
-        // Selecting content level
+        // Group buttons horizontally
+        HBox messageButtons = new HBox(10, sendGenericMessageButton, sendSpecificMessageButton);
+        messageButtons.setPadding(new Insets(10, 0, 10, 0));
+
+        // Navigation to switch to the Search Article page
+        Button goToSearchPageButton = new Button("Go to Search Articles");
+        goToSearchPageButton.setOnAction(e -> showSearchPage(primaryStage));
+
+        // Logout button
+        Button logoutButton = new Button("Logout");
+        logoutButton.setOnAction(e -> {
+            App.logout();
+            start(primaryStage); // Return to login page
+        });
+
+        // Layout for Help Page
+        VBox helpLayout = new VBox(10, messageLabel, messageArea, messageButtons, goToSearchPageButton, logoutButton);
+        helpLayout.setPadding(new Insets(15));
+
+        Scene helpScene = new Scene(helpLayout, 400, 300);
+        primaryStage.setScene(helpScene);
+        primaryStage.setTitle("Help System");
+        primaryStage.show();
+    }
+
+    private void showSearchPage(Stage primaryStage) {
+        // Content Level and Group Selection
         ComboBox<String> contentLevelComboBox = new ComboBox<>();
         contentLevelComboBox.getItems().addAll("Beginner", "Intermediate", "Advanced", "Expert", "All");
-        contentLevelComboBox.setValue("All"); // Default to "All"
+        contentLevelComboBox.setValue("All");
 
-        // Selecting article group
         ComboBox<String> groupComboBox = new ComboBox<>();
         groupComboBox.getItems().addAll("Assignment Help", "Exam Preparation", "General Help", "All");
-        groupComboBox.setValue("All"); // Default to "All"
+        groupComboBox.setValue("All");
 
-        // Search keywords or ID
+        // Search field and search button
         TextField searchField = new TextField();
         searchField.setPromptText("Enter search keywords or ID");
 
-        // Displaying search results
-        ListView<String> searchResultsListView = new ListView<>();
-
-        // Search articles button
         Button searchButton = new Button("Search Articles");
+        ListView<String> searchResultsListView = new ListView<>();
+        searchResultsListView.setPrefHeight(150);
+
+        // Search action to display results
         searchButton.setOnAction(e -> {
             String query = searchField.getText();
             String level = contentLevelComboBox.getValue();
@@ -621,11 +645,11 @@ public class LoginPage extends Application {
             }
         });
 
+        // View selected article button
         Button viewArticleButton = new Button("View Selected Article");
         viewArticleButton.setOnAction(e -> {
             String selectedArticle = searchResultsListView.getSelectionModel().getSelectedItem();
             if (selectedArticle != null && !selectedArticle.equals("No articles found matching the criteria.")) {
-                // Extract article ID or other identifier from the selected item (assuming the title includes an identifier)
                 String articleID = extractArticleID(selectedArticle);
                 if (articleID != null) {
                     showFullArticle(primaryStage, articleID);
@@ -633,22 +657,20 @@ public class LoginPage extends Application {
             }
         });
 
-        // Logout button
-        Button logoutButton = new Button("Logout");
-        logoutButton.setOnAction(e -> {
-            App.logout();
-            start(primaryStage); // Return to login page
-        });
+        // Navigation button to go back to Help page
+        Button goToHelpPageButton = new Button("Go to Help Page");
+        goToHelpPageButton.setOnAction(e -> showHelpPage(primaryStage));
 
-        // Layout
-        VBox studentLayout = new VBox(10, messageLabel, messageArea, sendGenericMessageButton, sendSpecificMessageButton,
+        // Layout for Search Page
+        VBox searchLayout = new VBox(10,
                 new Label("Content Level:"), contentLevelComboBox,
                 new Label("Group:"), groupComboBox,
-                searchField, searchButton,
-                searchResultsListView, viewArticleButton, logoutButton);
+                searchField, searchButton, searchResultsListView, viewArticleButton, goToHelpPageButton);
+        searchLayout.setPadding(new Insets(15));
 
-        Scene studentScene = new Scene(studentLayout, 400, 500);
-        primaryStage.setScene(studentScene);
+        Scene searchScene = new Scene(searchLayout, 400, 500);
+        primaryStage.setScene(searchScene);
+        primaryStage.setTitle("Search Articles");
         primaryStage.show();
     }
 
@@ -661,20 +683,22 @@ public class LoginPage extends Application {
     private void showFullArticle(Stage primaryStage, String articleID) {
         String[] articleDetails = ArticleDatabase.returnArticle(articleID);
         if (articleDetails != null) {
-            // Create UI elements to display full article content
             Label titleLabel = new Label("Title: " + articleDetails[1]);
             Label authorLabel = new Label("Author: " + articleDetails[2]);
             TextArea abstractArea = new TextArea(articleDetails[3]);
             abstractArea.setEditable(false);
             abstractArea.setWrapText(true);
-            TextArea contentArea = new TextArea(articleDetails[4]); // Assuming index 4 is the main content
+            TextArea contentArea = new TextArea(articleDetails[4]);
             contentArea.setEditable(false);
             contentArea.setWrapText(true);
-            Button backButton = new Button("Back");
-            backButton.setOnAction(e -> showStudentPage(primaryStage));
+
+            Button backButton = new Button("Back to Search");
+            backButton.setOnAction(e -> showSearchPage(primaryStage));
 
             VBox articleLayout = new VBox(10, titleLabel, authorLabel, new Label("Abstract:"), abstractArea,
                     new Label("Content:"), contentArea, backButton);
+            articleLayout.setPadding(new Insets(15));
+
             Scene articleScene = new Scene(articleLayout, 400, 600);
             primaryStage.setScene(articleScene);
         }
@@ -693,6 +717,7 @@ public class LoginPage extends Application {
             System.out.println("Specific message sent: " + message);
         }
     }
+
 
     private void showInstructorPage(Stage primaryStage) {
         // Existing buttons for the instructor
