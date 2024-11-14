@@ -586,21 +586,129 @@ public class LoginPage extends Application {
     }
 
     private void showStudentPage(Stage primaryStage) {
+        // Labels and Text Area
+        Label messageLabel = new Label("Message to Help System:");
+        TextArea messageArea = new TextArea();
 
-        Button loggout = new Button("Logout");
+        // Generic and specific message buttons
+        Button sendGenericMessageButton = new Button("Send Generic Message");
+        sendGenericMessageButton.setOnAction(e -> sendGenericMessage(messageArea.getText()));
 
+        Button sendSpecificMessageButton = new Button("Send Specific Message");
+        sendSpecificMessageButton.setOnAction(e -> sendSpecificMessage(messageArea.getText()));
 
-        loggout.setOnAction(e -> {
-            App.logout();
-            start(primaryStage);
+        // Selecting content level
+        ComboBox<String> contentLevelComboBox = new ComboBox<>();
+        contentLevelComboBox.getItems().addAll("Beginner", "Intermediate", "Advanced", "Expert", "All");
+        contentLevelComboBox.setValue("All"); // Default to "All"
+
+        // Selecting article group
+        ComboBox<String> groupComboBox = new ComboBox<>();
+        groupComboBox.getItems().addAll("Assignment Help", "Exam Preparation", "General Help", "All");
+        groupComboBox.setValue("All"); // Default to "All"
+
+        // Search keywords or ID
+        TextField searchField = new TextField();
+        searchField.setPromptText("Enter search keywords or ID");
+
+        // Displaying search results
+        ListView<String> searchResultsListView = new ListView<>();
+
+        // Search articles button
+        Button searchButton = new Button("Search Articles");
+        searchButton.setOnAction(e -> {
+            String query = searchField.getText();
+            String level = contentLevelComboBox.getValue();
+            String group = groupComboBox.getValue();
+
+            // Call searchArticles and update ListView with results
+            String[][] searchResults = ArticleDatabase.searchArticles(query, level, group);
+            searchResultsListView.getItems().clear();
+
+            if (searchResults != null && searchResults.length > 0) {
+                for (String[] article : searchResults) {
+                    String title = article[1];
+                    String author = article[2];
+                    String abstractText = article[3];
+                    String summary = "Title: " + title + ", Author: " + author + ", Abstract: " + abstractText;
+                    searchResultsListView.getItems().add(summary);
+                }
+            } else {
+                searchResultsListView.getItems().add("No articles found matching the criteria.");
+            }
         });
 
-        VBox newUserLayout = new VBox(10, loggout);
-        Scene newUserScene = new Scene(newUserLayout, 300, 300);
+        Button viewArticleButton = new Button("View Selected Article");
+        viewArticleButton.setOnAction(e -> {
+            String selectedArticle = searchResultsListView.getSelectionModel().getSelectedItem();
+            if (selectedArticle != null && !selectedArticle.equals("No articles found matching the criteria.")) {
+                // Extract article ID or other identifier from the selected item (assuming the title includes an identifier)
+                String articleID = extractArticleID(selectedArticle);
+                if (articleID != null) {
+                    showFullArticle(primaryStage, articleID);
+                }
+            }
+        });
 
-        primaryStage.setScene(newUserScene);
+        // Logout button
+        Button logoutButton = new Button("Logout");
+        logoutButton.setOnAction(e -> {
+            App.logout();
+            start(primaryStage); // Return to login page
+        });
+
+        // Layout
+        VBox studentLayout = new VBox(10, messageLabel, messageArea, sendGenericMessageButton, sendSpecificMessageButton,
+                new Label("Content Level:"), contentLevelComboBox,
+                new Label("Group:"), groupComboBox,
+                searchField, searchButton,
+                searchResultsListView, viewArticleButton, logoutButton);
+
+        Scene studentScene = new Scene(studentLayout, 400, 500);
+        primaryStage.setScene(studentScene);
         primaryStage.show();
+    }
 
+    // Helper method to extract article ID from selected summary (implement as needed)
+    private String extractArticleID(String selectedArticle) {
+        return "some-article-id"; // Replace with actual logic to extract ID
+    }
+
+    // Method to display full article details in a new page or popup
+    private void showFullArticle(Stage primaryStage, String articleID) {
+        String[] articleDetails = ArticleDatabase.returnArticle(articleID);
+        if (articleDetails != null) {
+            // Create UI elements to display full article content
+            Label titleLabel = new Label("Title: " + articleDetails[1]);
+            Label authorLabel = new Label("Author: " + articleDetails[2]);
+            TextArea abstractArea = new TextArea(articleDetails[3]);
+            abstractArea.setEditable(false);
+            abstractArea.setWrapText(true);
+            TextArea contentArea = new TextArea(articleDetails[4]); // Assuming index 4 is the main content
+            contentArea.setEditable(false);
+            contentArea.setWrapText(true);
+            Button backButton = new Button("Back");
+            backButton.setOnAction(e -> showStudentPage(primaryStage));
+
+            VBox articleLayout = new VBox(10, titleLabel, authorLabel, new Label("Abstract:"), abstractArea,
+                    new Label("Content:"), contentArea, backButton);
+            Scene articleScene = new Scene(articleLayout, 400, 600);
+            primaryStage.setScene(articleScene);
+        }
+    }
+
+    private void sendGenericMessage(String message) {
+        if (!message.isEmpty()) {
+            App.sendGenericMessage(message);
+            System.out.println("Generic message sent: " + message);
+        }
+    }
+
+    private void sendSpecificMessage(String message) {
+        if (!message.isEmpty()) {
+            App.sendSpecificMessage(message);
+            System.out.println("Specific message sent: " + message);
+        }
     }
 
     private void showInstructorPage(Stage primaryStage) {
