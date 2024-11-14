@@ -202,15 +202,46 @@ public class LoginPage extends Application {
 //        restoreData.setOnAction(e -> {
 //            showRestoreArticlePage(primaryStage);
 //        });
+        //Buttons for Phase 3
+        Button updateGroupPermissions = new Button("Update Group Permissions");
+        updateGroupPermissions.setOnAction(e -> updateGroupPermissions(primaryStage));
+
 
         // Layout for the Admin Homepage
         VBox instructorLayout = new VBox(10, createArticle,viewArticle,editArticle,deleteArticle);
-        VBox adminLayout = new VBox(10, logoutButton, inviteUserButton, deleteUserButton, resetUserButton, listUsersButton, updateUserRolesButton);
+        VBox adminLayout = new VBox(10, logoutButton, inviteUserButton, deleteUserButton, resetUserButton, listUsersButton, updateUserRolesButton, updateGroupPermissions);
         HBox mainAdminLayout = new HBox(10, adminLayout, instructorLayout);
         Scene adminScene = new Scene(mainAdminLayout, 300, 300);
 
         primaryStage.setScene(adminScene);
         primaryStage.show();
+    }
+    private void updateGroupPermissions(Stage primaryStage) {
+        TextField userField = new TextField();
+        userField.setPromptText("Enter User Name");
+
+        TextField groupField = new TextField();
+        groupField.setPromptText("Enter Group");
+
+        Button addAccess = new Button("Add Access");
+        //addAccess.setOnAction(e -> //);
+
+        Button viewAccess = new Button("View Access");
+        //viewAccess.setOnAction(e -> //);
+
+        Button removeAccess = new Button("Remove Access");
+        //removeAccess.setOnAction(e -> //);
+
+        Button backButton = new Button("Back");
+        backButton.setOnAction(e -> start(primaryStage));
+
+        HBox accessButtons = new HBox(10, addAccess, viewAccess, removeAccess);
+        VBox modifyGroupPage = new VBox(10, userField, groupField, accessButtons, backButton);
+        Scene updateGroupsScene = new Scene(modifyGroupPage, 300, 250);
+
+        primaryStage.setScene(updateGroupsScene);
+        primaryStage.show();
+
     }
 
     // Method to navigate to the invite user page
@@ -618,6 +649,8 @@ public class LoginPage extends Application {
         primaryStage.show();
     }
 
+
+    // New method for the Backup/Restore page
     private void showBackupRestorePage(Stage primaryStage) {
         // Text field for entering the file name
         Label fileNameLabel = new Label("Enter File Name:");
