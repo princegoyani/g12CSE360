@@ -68,8 +68,6 @@ public class ArticleDatabase {
 		// admin to instructor
 		try{
 			articleDatabaseHelper.addSpecialAccess(userid,groupName,"Instructor");
-
-
 			return true;
 		}catch (Exception e){
 			System.out.println("Database error: " + e);

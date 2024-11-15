@@ -719,8 +719,8 @@ public class LoginPage extends Application {
         });
 
         // Navigation button to go back to Help page
-        Button goToHelpPageButton = new Button("Go to Help Page");
-        goToHelpPageButton.setOnAction(e -> showHelpPage(primaryStage));
+        Button goToHelpPageButton = new Button("Back");
+        goToHelpPageButton.setOnAction(e -> showStudentPage(primaryStage));
 
         // Layout for Search Page
         VBox searchLayout = new VBox(10,
