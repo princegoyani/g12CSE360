@@ -628,18 +628,45 @@ public class LoginPage extends Application {
         // Labels and Text Area
         Label messageLabel = new Label("Message to Help System:");
         TextArea messageArea = new TextArea();
+        messageArea.setPrefRowCount(3); // Limit message area height
 
-        // Generic and specific message buttons
+        // Buttons for sending generic and specific messages
         Button sendGenericMessageButton = new Button("Send Generic Message");
         sendGenericMessageButton.setOnAction(e -> sendGenericMessage(messageArea.getText()));
 
         Button sendSpecificMessageButton = new Button("Send Specific Message");
         sendSpecificMessageButton.setOnAction(e -> sendSpecificMessage(messageArea.getText()));
 
-        // Selecting content level
+        // Group buttons horizontally
+        HBox messageButtons = new HBox(10, sendGenericMessageButton, sendSpecificMessageButton);
+        messageButtons.setPadding(new Insets(10, 0, 10, 0));
+
+        // Navigation to switch to the Search Article page
+        Button goToSearchPageButton = new Button("Go to Search Articles");
+        goToSearchPageButton.setOnAction(e -> showSearchPage(primaryStage));
+
+        // Logout button
+        Button logoutButton = new Button("Logout");
+        logoutButton.setOnAction(e -> {
+            App.logout();
+            start(primaryStage); // Return to login page
+        });
+
+        // Layout for Help Page
+        VBox helpLayout = new VBox(10, messageLabel, messageArea, messageButtons, goToSearchPageButton, logoutButton);
+        helpLayout.setPadding(new Insets(15));
+
+        Scene helpScene = new Scene(helpLayout, 400, 300);
+        primaryStage.setScene(helpScene);
+        primaryStage.setTitle("Help System");
+        primaryStage.show();
+    }
+
+    private void showSearchPage(Stage primaryStage) {
+        // Content Level and Group Selection
         ComboBox<String> contentLevelComboBox = new ComboBox<>();
         contentLevelComboBox.getItems().addAll("Beginner", "Intermediate", "Advanced", "Expert", "All");
-        contentLevelComboBox.setValue("All"); // Default to "All"
+        contentLevelComboBox.setValue("All");
 
         // Selecting article group
         ComboBox<String> groupComboBox = new ComboBox<>();
@@ -651,10 +678,11 @@ public class LoginPage extends Application {
         searchField.setPromptText("Enter search keywords or ID");
 
         // Displaying search results
-        ListView<String> searchResultsListView = new ListView<>();
-
-        // Search articles button
         Button searchButton = new Button("Search Articles");
+        ListView<String> searchResultsListView = new ListView<>();
+        searchResultsListView.setPrefHeight(150);
+
+        // Search action to display results
         searchButton.setOnAction(e -> {
             String query = searchField.getText();
             String level = contentLevelComboBox.getValue();
@@ -677,6 +705,7 @@ public class LoginPage extends Application {
             }
         });
 
+        // View selected article button
         Button viewArticleButton = new Button("View Selected Article");
         viewArticleButton.setOnAction(e -> {
             String selectedArticle = searchResultsListView.getSelectionModel().getSelectedItem();
@@ -689,22 +718,20 @@ public class LoginPage extends Application {
             }
         });
 
-        // Logout button
-        Button logoutButton = new Button("Logout");
-        logoutButton.setOnAction(e -> {
-            App.logout();
-            start(primaryStage); // Return to login page
-        });
+        // Navigation button to go back to Help page
+        Button goToHelpPageButton = new Button("Go to Help Page");
+        goToHelpPageButton.setOnAction(e -> showHelpPage(primaryStage));
 
-        // Layout
-        VBox studentLayout = new VBox(10, messageLabel, messageArea, sendGenericMessageButton, sendSpecificMessageButton,
+        // Layout for Search Page
+        VBox searchLayout = new VBox(10,
                 new Label("Content Level:"), contentLevelComboBox,
                 new Label("Group:"), groupComboBox,
-                searchField, searchButton,
-                searchResultsListView, viewArticleButton, logoutButton);
+                searchField, searchButton, searchResultsListView, viewArticleButton, goToHelpPageButton);
+        searchLayout.setPadding(new Insets(15));
 
-        Scene studentScene = new Scene(studentLayout, 400, 500);
-        primaryStage.setScene(studentScene);
+        Scene searchScene = new Scene(searchLayout, 400, 500);
+        primaryStage.setScene(searchScene);
+        primaryStage.setTitle("Search Articles");
         primaryStage.show();
     }
 
@@ -723,14 +750,17 @@ public class LoginPage extends Application {
             TextArea abstractArea = new TextArea(articleDetails[3]);
             abstractArea.setEditable(false);
             abstractArea.setWrapText(true);
-            TextArea contentArea = new TextArea(articleDetails[4]); // Assuming index 4 is the main content
+            TextArea contentArea = new TextArea(articleDetails[4]);
             contentArea.setEditable(false);
             contentArea.setWrapText(true);
-            Button backButton = new Button("Back");
-            backButton.setOnAction(e -> showStudentPage(primaryStage));
+
+            Button backButton = new Button("Back to Search");
+            backButton.setOnAction(e -> showSearchPage(primaryStage));
 
             VBox articleLayout = new VBox(10, titleLabel, authorLabel, new Label("Abstract:"), abstractArea,
                     new Label("Content:"), contentArea, backButton);
+            articleLayout.setPadding(new Insets(15));
+
             Scene articleScene = new Scene(articleLayout, 400, 600);
             primaryStage.setScene(articleScene);
         }
@@ -749,6 +779,7 @@ public class LoginPage extends Application {
             System.out.println("Specific message sent: " + message);
         }
     }
+
 
     private void showInstructorPage(Stage primaryStage) {
         // Existing buttons for the instructor
@@ -821,7 +852,10 @@ public class LoginPage extends Application {
                 groupDialog.setHeaderText("Enter the group ID(s) to backup:");
                 groupDialog.setContentText("Group ID(s):");
 
-                groupDialog.showAndWait().ifPresent(groupIds -> ArticleDatabase.callBackupByGrouping(fileName , groupIds));
+                groupDialog.showAndWait().ifPresent(groupIds -> {
+                    ArticleDatabase.callBackupByGrouping(fileName , groupIds);
+
+                });
             }
         });
 
