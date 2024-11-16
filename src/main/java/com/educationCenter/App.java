@@ -11,13 +11,13 @@ import com.educationCenter.User_Database_Handler.UserDatabaseHelper;
 public class App {
 	private static final UserDatabaseHelper USER_DATABASE_HELPER = new UserDatabaseHelper();
 	private static final Scanner scanner = new Scanner(System.in);
-	private static String userId ;
 	private static String username;
 	private static String password;
 	private static String activeRole;
 	public static String getActiveRole(){
 		return activeRole;
 	}
+	public static String getUsername(){return username;}
 	public static void setActiveRole(String role){
 		activeRole = role;
 	}
@@ -198,7 +198,7 @@ public class App {
 		datas=null;
 		activeRole=null;
 		}
-	public static String returnUserId(String user){
+	public static int getUserId(String user){
 		return USER_DATABASE_HELPER.getUserId(user);
 	}
     

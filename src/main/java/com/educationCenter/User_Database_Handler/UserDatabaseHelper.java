@@ -52,20 +52,20 @@ public class UserDatabaseHelper {
 
 		statement.execute(userTable);
 	}
-	public String getUserId(String username){
+	public int getUserId(String username){
 		String query = "SELECT id FROM cse360users WHERE username = ?";
 
 		try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 			preparedStatement.setString(1, username);
 			ResultSet resultSet = preparedStatement.executeQuery();
 			if (resultSet.next()) {
-				return resultSet.getString("id");
+				return resultSet.getInt("id");
 			}
 
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
 		}
-		return null;
+		return 0;
 	}
 
 	// Check if the database is empty

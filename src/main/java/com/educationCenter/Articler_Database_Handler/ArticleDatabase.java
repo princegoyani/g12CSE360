@@ -32,7 +32,8 @@ public class ArticleDatabase {
 
 		try {
 			// Fetch all articles from the database
-			String[][] allArticles = articleDatabaseHelper.returnListArticles();
+			String[] groups=  articleDatabaseHelper.returnGroupFromUser(App.getUserId(App.getUsername()));
+			String[][] allArticles = articleDatabaseHelper.returnListArticles(groups);
 
 			for (String[] article : allArticles) {
 				String articleTitle = article[1];
@@ -63,7 +64,9 @@ public class ArticleDatabase {
 		return results.toArray(new String[0][]);
 	}
 
-	public static boolean addAccessForGroup(String userid,String groupName){
+
+
+	public static boolean addAccessForGroup(int userid,String groupName){
 		// instructor to student
 		// admin to instructor
 		try{
@@ -75,7 +78,7 @@ public class ArticleDatabase {
 		return false;
 	}
 
-	public static boolean deleteAccessForGroup(String userid,String groupName){
+	public static boolean deleteAccessForGroup(int userid,String groupName){
 		try{
 
 			articleDatabaseHelper.deleteSpecialAccess(userid,groupName);
@@ -245,7 +248,7 @@ public class ArticleDatabase {
 
 	public static String[] returnGroupsFromUser(String username){
 		try{
-			int userId = Integer.parseInt(App.returnUserId(username));
+			int userId = App.getUserId(username);
 			return articleDatabaseHelper.returnGroupFromUser(userId);
 		} catch (Exception e) {
             System.out.println("Error in returnGroupsFromUser");
@@ -276,8 +279,8 @@ public class ArticleDatabase {
 		public static String[][] returnListArticles() {
 
 			try {
-
-                return articleDatabaseHelper.returnListArticles();
+				String[] groups = articleDatabaseHelper.returnGroupFromUser(App.getUserId(App.getUsername()));
+                return articleDatabaseHelper.returnListArticles(groups);
             }catch(Exception e) {
 			System.out.println(e.getMessage());
 			}
@@ -365,12 +368,24 @@ public class ArticleDatabase {
 
 
 	public static boolean removeGroupFromSpecialAccess(String groupName) {
-
+		try{
+			articleDatabaseHelper.DeleteGroup(groupName);
+			return true;
+		} catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
         return false;
     }
 
 	public static boolean addGroupToSpecialAccess(String groupName) {
-
+        try {
+            if (articleDatabaseHelper.getGroupAdmin(groupName) == 0) {
+                articleDatabaseHelper.addNewGroup(groupName, App.getUserId(App.getUsername()));
+				return true;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         return false;
     }
 }

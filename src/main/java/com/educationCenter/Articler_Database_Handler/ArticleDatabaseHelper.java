@@ -6,15 +6,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*; import java.sql.Connection; import java.sql.DriverManager;
 import java.sql.SQLException; import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 
-
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.ISOSignatureSpi;
 import org.h2.tools.Backup;
 import org.h2.tools.Restore;
 //import Encryption.EncryptionHelper;
@@ -74,6 +71,7 @@ class ArticleDatabaseHelper {
 			statement = connection.createStatement();
 			articleCreateTables();
 			specialAccessTable();
+			specialAccessGroupsTable();
 			System.gc();
 		} catch (ClassNotFoundException e) { System.err.println("JDBC Driver not found: " + e.getMessage()); }
 	}
@@ -124,6 +122,46 @@ class ArticleDatabaseHelper {
 		statement.execute(userTable);
 	}
 
+	public void specialAccessGroupsTable() throws SQLException {
+		String groupTable = "CREATE TABLE IF NOT EXISTS cse360groups ("
+				+ "id LONG AUTO_INCREMENT UNIQUE PRIMARY KEY, "
+				+ "groupName VARCHAR(255) ,"
+				+ "groupAdmin INT)";
+		statement.execute(groupTable);
+	}
+
+	public void addNewGroup(String groupName,int groupAdmin) throws SQLException {
+		String sql = "INSERT INTO cse360groups (groupName, groupAdmin) VALUES (?, ?)";
+		try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+			preparedStatement.setString(1, groupName);
+			preparedStatement.setInt(2, groupAdmin);
+			preparedStatement.executeUpdate();
+		};
+	}
+
+	public void DeleteGroup(String groupName) throws SQLException {
+		String sql = "DELETE FROM cse360groups WHERE groupName = ?";
+		try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+			preparedStatement.setString(1, groupName);
+			preparedStatement.executeUpdate();
+		}
+	}
+
+	public int getGroupAdmin(String groupName) throws SQLException {
+		String sql = "SELECT * FROM cse360groups WHERE groupName = ?";
+		try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+			preparedStatement.setString(1, groupName);
+			ResultSet resultSet = preparedStatement.executeQuery();
+
+			while (resultSet.next()) {
+				return resultSet.getInt("groupAdmin");
+			}
+
+		}
+		return 0;
+	}
+
+
 	private void specialAccessTable() throws SQLException {
 		String specialAccessTable = "CREATE TABLE IF NOT EXISTS cse360access ("
 				+ "id LONG AUTO_INCREMENT UNIQUE PRIMARY KEY, "
@@ -134,10 +172,11 @@ class ArticleDatabaseHelper {
 		statement.execute(specialAccessTable);
 
 	}
-		public void addSpecialAccess(String userId,String groupName, String accessType) throws SQLException{
+
+		public void addSpecialAccess(int userId,String groupName, String accessType) throws SQLException{
 			String sql = "INSERT INTO cse360access (userId,groupName,accessType) VALUES(?,?,?)";
 			try(PreparedStatement pstmt = connection.prepareStatement(sql)) {
-				pstmt.setInt(1, Integer.parseInt(userId));
+				pstmt.setInt(1, userId);
 				pstmt.setString(2, groupName);
 				pstmt.setString(3, accessType);
 
@@ -579,13 +618,18 @@ class ArticleDatabaseHelper {
 	}
 
 
-	public String[][] returnListArticles() throws Exception{
+	public String[][] returnListArticles(String[] groups) throws Exception{
 			if (isDatabaseEmpty() == true) { System.out.println("There are no articles in the database."); return null; }
 			String sql = "SELECT * FROM cse360articles";
 			Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
 			List<String[]> ArticleList = new ArrayList<>();
 
 			while(rs.next()) {
+				String group = rs.getString("grouping");
+
+			if ((getGroupAdmin(group) != 0) && !(Arrays.asList(groups).contains(group))){
+				continue;
+			}
 				int id  = rs.getInt("id");
 				// Decryption occurs before displaying data to the user.
 				String encryptedTitle = rs.getString("title"); String encryptedAuthor = rs.getString("author");
@@ -972,10 +1016,10 @@ class ArticleDatabaseHelper {
 		}
 
 
-	public void deleteSpecialAccess(String userId,String groupName) throws SQLException{
+	public void deleteSpecialAccess(int userId,String groupName) throws SQLException{
 		String sql = "DELETE FROM cse360access WHERE userId = ? AND groupName = ?";
 		try(PreparedStatement pstmt = connection.prepareStatement(sql)) {
-			pstmt.setInt(1, Integer.parseInt(userId));
+			pstmt.setInt(1, userId);
 			pstmt.setString(2, groupName);
 
 			pstmt.executeUpdate();

@@ -153,6 +153,8 @@ public class LoginPage extends Application {
         Button resetUserButton = new Button("Reset User");
         Button listUsersButton = new Button("List Users");
         Button updateUserRolesButton = new Button("Update User Roles");
+        Button showGroupAccess = new Button("Show Group Access");
+        Button updateGroupPermissions = new Button("Update Group Permissions");
 
         // Action for logout button to return to the login page
         logoutButton.setOnAction(e -> {
@@ -167,10 +169,12 @@ public class LoginPage extends Application {
         listUsersButton.setOnAction(e -> showListUsersPage(primaryStage));
         updateUserRolesButton.setOnAction(e -> showUpdateUserRolesPage(primaryStage));
 
+
         //Buttons related to instructor functionality
         Button createArticle = new Button("Create Article");
         Button editArticle = new Button("Edit Article");
         Button viewArticle = new Button("View Article");
+
         Button deleteArticle = new Button("Delete Article");
 
         createArticle.setOnAction(e -> showCreateArticlePage(primaryStage));
@@ -180,7 +184,8 @@ public class LoginPage extends Application {
         viewArticle.setOnAction(e -> showlistArticlePage(primaryStage,"view"));
 
         deleteArticle.setOnAction(e -> showdeleteArticlePage(primaryStage));
-
+        ;
+        showGroupAccess.setOnAction(e -> showSpecialAccessPage(primaryStage));
 
 //        backupData.setOnAction(e -> {
 //            showbackupArticlePage(primaryStage);
@@ -190,13 +195,13 @@ public class LoginPage extends Application {
 //            showRestoreArticlePage(primaryStage);
 //        });
         //Buttons for Phase 3
-        Button updateGroupPermissions = new Button("Update Group Permissions");
+
         updateGroupPermissions.setOnAction(e -> updateGroupPermissions(primaryStage));
 
 
         // Layout for the Admin Homepage
         VBox instructorLayout = new VBox(10, createArticle,viewArticle,editArticle,deleteArticle);
-        VBox adminLayout = new VBox(10, logoutButton, inviteUserButton, deleteUserButton, resetUserButton, listUsersButton, updateUserRolesButton, updateGroupPermissions);
+        VBox adminLayout = new VBox(10, logoutButton, inviteUserButton, deleteUserButton, resetUserButton, listUsersButton, updateUserRolesButton, showGroupAccess, updateGroupPermissions);
         HBox mainAdminLayout = new HBox(10, adminLayout, instructorLayout);
         Scene adminScene = new Scene(mainAdminLayout, 300, 300);
 
@@ -219,14 +224,14 @@ public class LoginPage extends Application {
 
         addAccess.setOnAction(e -> {
             if(userField != null && groupField != null) {
-                String userId = App.returnUserId(userField.getText());
+                int userId = App.getUserId(userField.getText());
                 ArticleDatabase.addAccessForGroup(userId, groupField.getText());
             }
         });
 
         removeAccess.setOnAction(e -> {
             if(userField != null && groupField != null) {
-                String userId = App.returnUserId(userField.getText());
+                int userId = App.getUserId(userField.getText());
                 ArticleDatabase.deleteAccessForGroup(userId, groupField.getText());
             }
         });
@@ -1239,7 +1244,7 @@ public class LoginPage extends Application {
 
         // Back button to return to the Instructor Page
         Button backButton = new Button("Back");
-        backButton.setOnAction(e -> showInstructorPage(primaryStage));
+        backButton.setOnAction(e -> start(primaryStage));
 
         // Layout for the Special Access Page
         VBox specialAccessLayout = new VBox(10, groupNameLabel, groupNameField,
