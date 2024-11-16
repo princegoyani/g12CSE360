@@ -364,5 +364,13 @@ public class ArticleDatabase {
 	}
 
 
+	public static boolean removeGroupFromSpecialAccess(String groupName) {
 
+        return false;
+    }
+
+	public static boolean addGroupToSpecialAccess(String groupName) {
+
+        return false;
+    }
 }

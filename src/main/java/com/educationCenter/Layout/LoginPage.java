@@ -1193,6 +1193,64 @@ public class LoginPage extends Application {
         primaryStage.show();
     }
 
+    private void showSpecialAccessPage(Stage primaryStage) {
+        // Labels and input field
+        Label groupNameLabel = new Label("Enter Group Name:");
+        TextField groupNameField = new TextField();
+        groupNameField.setPromptText("Enter group name");
+
+        // Buttons for adding and removing special access
+        Button addSpecialAccessButton = new Button("Add to Special Access Only");
+        Button removeSpecialAccessButton = new Button("Remove from Special Access Only");
+
+        // Status message for feedback
+        Label statusMessage = new Label("");
+
+        // Button actions
+        addSpecialAccessButton.setOnAction(e -> {
+            String groupName = groupNameField.getText().trim();
+            if (groupName.isEmpty()) {
+                statusMessage.setText("Group name cannot be empty.");
+            } else {
+                // Add to special access
+                boolean success = ArticleDatabase.addGroupToSpecialAccess(groupName);
+                if (success) {
+                    statusMessage.setText("Group '" + groupName + "' added to special access.");
+                } else {
+                    statusMessage.setText("Failed to add group to special access.");
+                }
+            }
+        });
+
+        removeSpecialAccessButton.setOnAction(e -> {
+            String groupName = groupNameField.getText().trim();
+            if (groupName.isEmpty()) {
+                statusMessage.setText("Group name cannot be empty.");
+            } else {
+                // Remove from special access
+                boolean success = ArticleDatabase.removeGroupFromSpecialAccess(groupName);
+                if (success) {
+                    statusMessage.setText("Group '" + groupName + "' removed from special access.");
+                } else {
+                    statusMessage.setText("Failed to remove group from special access.");
+                }
+            }
+        });
+
+        // Back button to return to the Instructor Page
+        Button backButton = new Button("Back");
+        backButton.setOnAction(e -> showInstructorPage(primaryStage));
+
+        // Layout for the Special Access Page
+        VBox specialAccessLayout = new VBox(10, groupNameLabel, groupNameField,
+                addSpecialAccessButton, removeSpecialAccessButton, statusMessage, backButton);
+        specialAccessLayout.setPadding(new Insets(15));
+
+        Scene specialAccessScene = new Scene(specialAccessLayout, 400, 300);
+        primaryStage.setScene(specialAccessScene);
+        primaryStage.setTitle("Manage Special Access");
+        primaryStage.show();
+    }
 
     public static void main(String[] args) {
         launch(args);
