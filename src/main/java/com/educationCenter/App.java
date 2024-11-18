@@ -27,7 +27,6 @@ public class App {
 	public static void main(String[] args) {
 
     	try {
-
     		USER_DATABASE_HELPER.userConnectToDatabase(); // connecting to database
 
     		while (true){
@@ -272,7 +271,9 @@ public class App {
 		}
 
 
-
+		public static String returnUsername(int userid){
+			return USER_DATABASE_HELPER.getUsername(userid);
+		}
 
 		public static String loginInvitedUser(String email, String inputCode){
 			//date

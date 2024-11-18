@@ -5,6 +5,7 @@ import com.educationCenter.App;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class ArticleDatabase {
@@ -245,17 +246,6 @@ public class ArticleDatabase {
 			}
 		}
 	}
-
-	public static String[] returnGroupsFromUser(String username){
-		try{
-			int userId = App.getUserId(username);
-			return articleDatabaseHelper.returnGroupFromUser(userId);
-		} catch (Exception e) {
-            System.out.println("Error in returnGroupsFromUser");
-        }
-		return null;
-    }
-
 	// DIRECT ACCESS CALLS FROM HELP SYSTEM:
 	// make direct access for all menu options 1-6 (to be given to users by user-account programmer)
 	//
@@ -367,10 +357,17 @@ public class ArticleDatabase {
 	}
 
 
-	public static boolean removeGroupFromSpecialAccess(String groupName) {
+	public static boolean removeGroupFromSpecialAccess(String groupName,String username) {
 		try{
-			articleDatabaseHelper.DeleteGroup(groupName);
+			if (username!=null){
+
+			if (App.getUsername().equals(username)) {
+				articleDatabaseHelper.DeleteGroup(groupName);
+			};
+			articleDatabaseHelper.DeleteUserAcessGroup(groupName,App.getUserId(username));
+
 			return true;
+			}
 		} catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -379,7 +376,7 @@ public class ArticleDatabase {
 
 	public static boolean addGroupToSpecialAccess(String groupName) {
         try {
-            if (articleDatabaseHelper.getGroupAdmin(groupName) == 0) {
+            if (articleDatabaseHelper.getGroupAdmin(groupName).length == 0) {
                 articleDatabaseHelper.addNewGroup(groupName, App.getUserId(App.getUsername()));
 				return true;
             }
@@ -388,4 +385,33 @@ public class ArticleDatabase {
         }
         return false;
     }
+	public static boolean addGroupToSpecialAccess(String groupName,int userid) {
+		try {
+
+			articleDatabaseHelper.addNewGroup(groupName, userid);
+			return true;
+
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+		return false;
+	}
+
+	public static String[] returnUsersFromGroup(String groupName) {
+        try {
+			int[] ids = articleDatabaseHelper.getGroupAdmin(groupName);
+			String[] admins = new String[ids.length];
+			for (int i = 0; i < ids.length; i++) {
+				admins[i] = App.returnUsername(ids[i]);
+			}
+			return admins;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+		return null;
+    }
+
+	public static String[] returnGroupsFromUser(String username) {
+		return articleDatabaseHelper.returnGroupFromUser(App.getUserId(username));
+	}
 }

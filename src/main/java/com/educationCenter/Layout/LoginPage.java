@@ -218,6 +218,9 @@ public class LoginPage extends Application {
         Button addAccess = new Button("Add Access");
         Button viewAccess = new Button("View Access");
         Button removeAccess = new Button("Remove Access");
+        Button addAdminAccess = new Button("Add Admin Admin Access");
+        Button viewAdminAccess = new Button("View Admin Access");
+        Button removeAdminAccess = new Button("Remove Admin Access");
 
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> start(primaryStage));
@@ -237,12 +240,34 @@ public class LoginPage extends Application {
         });
 
         viewAccess.setOnAction(e -> {
-                    showAcesssPage(primaryStage,userField.getText());
+            if(userField != null) {
+                showAcesssPage(primaryStage,userField.getText(),null);
+            }
+
         });
 
+        addAdminAccess.setOnAction(e -> {
+           if(userField != null && groupField != null) {
+               int userId = App.getUserId(userField.getText());
+               ArticleDatabase.addGroupToSpecialAccess(groupField.getText(),userId);
+           }
+        });
+
+        viewAdminAccess.setOnAction(e -> {
+            if(groupField != null) {
+                showAcesssPage(primaryStage,null,groupField.getText());
+            }
+        });
+
+        removeAdminAccess.setOnAction(e -> {
+            if(userField != null && groupField != null) {
+                ArticleDatabase.removeGroupFromSpecialAccess(groupField.getText(),userField.getText());
+            }
+        });
 
         HBox accessButtons = new HBox(10, addAccess, viewAccess, removeAccess);
-        VBox modifyGroupPage = new VBox(10, userField, groupField, accessButtons, backButton);
+        HBox adminAccessButtons = new HBox(10, addAdminAccess, viewAdminAccess, removeAdminAccess);
+        VBox modifyGroupPage = new VBox(10, userField, groupField, accessButtons,adminAccessButtons, backButton);
         Scene updateGroupsScene = new Scene(modifyGroupPage, 300, 250);
 
         primaryStage.setScene(updateGroupsScene);
@@ -250,12 +275,18 @@ public class LoginPage extends Application {
 
     }
 
-    private void showAcesssPage(Stage primaryStage,String username) {
+    private void showAcesssPage(Stage primaryStage,String username,String groupName) {
+
         Label listUsersLabel = new Label("List of Access for "  + username);
         Button backButton = new Button("Back");
 
         ListView<String> ArticleListView = new ListView<>();
-        String[] datas = ArticleDatabase.returnGroupsFromUser(username);
+        String[] datas;
+        if (username != null) {
+            datas = ArticleDatabase.returnGroupsFromUser(username);
+        }
+        else { datas= ArticleDatabase.returnUsersFromGroup(groupName);}
+
         if (datas != null) {
             System.out.println(datas);
             for (String data : datas) {
@@ -1233,7 +1264,7 @@ public class LoginPage extends Application {
                 statusMessage.setText("Group name cannot be empty.");
             } else {
                 // Remove from special access
-                boolean success = ArticleDatabase.removeGroupFromSpecialAccess(groupName);
+                boolean success = ArticleDatabase.removeGroupFromSpecialAccess(groupName,App.getUsername());
                 if (success) {
                     statusMessage.setText("Group '" + groupName + "' removed from special access.");
                 } else {

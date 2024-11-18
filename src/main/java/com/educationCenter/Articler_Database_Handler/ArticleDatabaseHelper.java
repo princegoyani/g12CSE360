@@ -141,24 +141,37 @@ class ArticleDatabaseHelper {
 
 	public void DeleteGroup(String groupName) throws SQLException {
 		String sql = "DELETE FROM cse360groups WHERE groupName = ?";
+
 		try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
 			preparedStatement.setString(1, groupName);
 			preparedStatement.executeUpdate();
 		}
 	}
 
-	public int getGroupAdmin(String groupName) throws SQLException {
+		public void DeleteUserAcessGroup(String groupName,int userid ) throws SQLException {
+			String sql = "DELETE FROM cse360groups WHERE groupName = ? AND groupAdmin = ?";
+
+			try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+				preparedStatement.setString(1, groupName);
+				preparedStatement.setInt(2, userid);
+				preparedStatement.executeUpdate();
+			}
+		}
+
+	public int[] getGroupAdmin(String groupName) throws SQLException {
 		String sql = "SELECT * FROM cse360groups WHERE groupName = ?";
+		List<Integer> adminList = new ArrayList<>();
 		try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
 			preparedStatement.setString(1, groupName);
 			ResultSet resultSet = preparedStatement.executeQuery();
 
 			while (resultSet.next()) {
-				return resultSet.getInt("groupAdmin");
+				adminList.add(resultSet.getInt("groupAdmin"));
 			}
 
 		}
-		return 0;
+
+        return adminList.stream().mapToInt(i->i).toArray();
 	}
 
 
@@ -627,7 +640,7 @@ class ArticleDatabaseHelper {
 			while(rs.next()) {
 				String group = rs.getString("grouping");
 
-			if ((getGroupAdmin(group) != 0) && !(Arrays.asList(groups).contains(group))){
+			if ((getGroupAdmin(group).length != 0) && !(Arrays.asList(groups).contains(group))){
 				continue;
 			}
 				int id  = rs.getInt("id");

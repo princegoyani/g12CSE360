@@ -68,6 +68,23 @@ public class UserDatabaseHelper {
 		return 0;
 	}
 
+	public String getUsername(int userId){
+		String query = "SELECT username FROM cse360users WHERE id= ?";
+
+		try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+			preparedStatement.setInt(1, userId);
+			ResultSet resultSet = preparedStatement.executeQuery();
+			if (resultSet.next()) {
+				return resultSet.getString("username");
+			}
+
+		} catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		return null;
+	}
+
+
 	// Check if the database is empty
 	public boolean isDatabaseEmpty() throws SQLException {
 		String query = "SELECT COUNT(*) AS count FROM cse360users";
