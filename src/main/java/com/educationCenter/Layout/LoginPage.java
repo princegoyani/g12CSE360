@@ -1141,7 +1141,6 @@ public class LoginPage extends Application {
                     String nonSensTitle = nonSensTitleField.getText();
                     String nonSensAbstrac = nonSensAbstractField.getText();
                     String sensKey = sensitiveKeyField.getText();
-
                     if (nonSensTitle.isEmpty() || nonSensAbstrac.isEmpty() || sensKey.isEmpty()) {
                         statusMessage.setText("Please fill in all sensitive information fields.");
                         System.out.println("Please fill in all sensitive information fields.");
