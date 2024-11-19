@@ -12,6 +12,7 @@ import com.educationCenter.App;
 import javafx.geometry.Insets;
 import javafx.stage.FileChooser;
 import java.io.File;
+import java.sql.SQLException;
 import java.util.Objects;
 
 
@@ -68,11 +69,11 @@ public class LoginPage extends Application {
 
         // Layout for the login page
         VBox vbox = new VBox(10, userLabel, userTextField, passwordLabel, passwordField, loginButton, inviteCodeButton, statusMessage);
-        Scene scene = new Scene(vbox, 300, 250);
+        Scene scene = new Scene(vbox, 600, 600);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
-    private void showSelectRoletologin(Stage primaryStage,String username) {
+    private void showSelectRoletologin(Stage primaryStage, String username) {
 
         // Label and TextField for username input
         Label updateUserRolesLabel = new Label("Enter application with :");
@@ -113,13 +114,13 @@ public class LoginPage extends Application {
         VBox updateRolesLayout = new VBox(10, updateUserRolesLabel,
                 adminRole, instructorRole, studentRole,
                 roleButton, backButton);
-        Scene updateRolesScene = new Scene(updateRolesLayout, 300, 250);
+        Scene updateRolesScene = new Scene(updateRolesLayout, 600, 600);
 
         primaryStage.setScene(updateRolesScene);
         primaryStage.show();
     }
     // Method to navigate to the Admin Homepage
-    private void manageLogin(Stage primaryStage,String username,String password, Label message) {
+    private void manageLogin(Stage primaryStage, String username, String password, Label message) {
 
         switch (App.appLogin(username, password)) {
             case "multi":
@@ -155,6 +156,8 @@ public class LoginPage extends Application {
         Button updateUserRolesButton = new Button("Update User Roles");
         Button updateGroupAccess = new Button("Update Group Access");
         Button updateGroupPermissions = new Button("Update Group Permissions");
+        Button viewMessages = new Button("View Messages");
+
 
         // Action for logout button to return to the login page
         logoutButton.setOnAction(e -> {
@@ -178,22 +181,19 @@ public class LoginPage extends Application {
         Button deleteArticle = new Button("Delete Article");
 
         createArticle.setOnAction(e -> showCreateArticlePage(primaryStage));
-
         editArticle.setOnAction(e -> showlistArticlePage(primaryStage,"edit"));
-
         viewArticle.setOnAction(e -> showlistArticlePage(primaryStage,"view"));
-
         deleteArticle.setOnAction(e -> showdeleteArticlePage(primaryStage));
         ;
         updateGroupAccess.setOnAction(e -> showSpecialAccessPage(primaryStage));
         updateGroupPermissions.setOnAction(e -> updateGroupPermissions(primaryStage));
-
+        viewMessages.setOnAction(e -> showMessages(primaryStage));
 
         // Layout for the Admin Homepage
         VBox instructorLayout = new VBox(10, createArticle,viewArticle,editArticle,deleteArticle);
-        VBox adminLayout = new VBox(10, logoutButton, inviteUserButton, deleteUserButton, resetUserButton, listUsersButton, updateUserRolesButton, updateGroupAccess, updateGroupPermissions);
+        VBox adminLayout = new VBox(10, logoutButton, inviteUserButton, deleteUserButton, resetUserButton, listUsersButton, updateUserRolesButton, updateGroupAccess, updateGroupPermissions,viewMessages);
         HBox mainAdminLayout = new HBox(10, adminLayout, instructorLayout);
-        Scene adminScene = new Scene(mainAdminLayout, 300, 300);
+        Scene adminScene = new Scene(mainAdminLayout, 600, 600);
 
         primaryStage.setScene(adminScene);
         primaryStage.show();
@@ -258,7 +258,7 @@ public class LoginPage extends Application {
         HBox accessButtons = new HBox(10, addAccess, viewAccess, removeAccess);
         HBox adminAccessButtons = new HBox(10, addAdminAccess, viewAdminAccess, removeAdminAccess);
         VBox modifyGroupPage = new VBox(10, userField, groupField, accessButtons,adminAccessButtons, backButton);
-        Scene updateGroupsScene = new Scene(modifyGroupPage, 500, 350);
+        Scene updateGroupsScene = new Scene(modifyGroupPage, 600, 600);
 
         primaryStage.setScene(updateGroupsScene);
         primaryStage.show();
@@ -288,7 +288,47 @@ public class LoginPage extends Application {
             backButton.setOnAction(e -> start(primaryStage));
 
             VBox listUsersLayout = new VBox(10, listUsersLabel, ArticleListView, backButton);
-            Scene listUsersScene = new Scene(listUsersLayout, 300, 300);
+            Scene listUsersScene = new Scene(listUsersLayout, 600, 600);
+
+            primaryStage.setScene(listUsersScene);
+            primaryStage.show();
+        }
+    }
+
+    private void showMessages(Stage primaryStage){
+        Label GenericMessagesLabel = new Label("Generic Messages");
+        Label SpecificMessagesLabel = new Label("Specific Messages");
+
+        TextField GenericMessagesField = new TextField();
+        TextField SpecificMessagesField = new TextField();
+
+        Label listUsersLabel = new Label("List of Messages:");
+        Button backButton = new Button("Back");
+        Button clearMessagesButton = new Button("Clear Messages");
+
+        ListView<String> ArticleListView = new ListView<>();
+        String[][] datas = App.listOfMessages();
+        if (datas != null) {
+            System.out.println(datas);
+            for (String[] data : datas) {
+                StringBuilder userData = new StringBuilder(data[0]);  // Start with user ID
+                for (int j = 1; j < 5; j++) {
+                    userData.append(" ").append(data[j]);
+                }
+                ArticleListView.getItems().add(userData.toString());
+            }
+
+            backButton.setOnAction(e -> start(primaryStage));
+            clearMessagesButton.setOnAction(e -> {
+                try {
+                    System.out.println("Clearing all messages...");
+                    App.clearAllMessages();
+                } catch (Exception ex) {
+                System.out.println("Error when clearing messages: " + ex.getMessage());
+            }
+            });
+            VBox listUsersLayout = new VBox(10, listUsersLabel, ArticleListView, clearMessagesButton, backButton);
+            Scene listUsersScene = new Scene(listUsersLayout, 600, 600);
 
             primaryStage.setScene(listUsersScene);
             primaryStage.show();
@@ -406,7 +446,7 @@ public class LoginPage extends Application {
         backButton.setOnAction(e -> showAdminHomepage(primaryStage));
 
         VBox listUsersLayout = new VBox(10, listUsersLabel, userListView, backButton);
-        Scene listUsersScene = new Scene(listUsersLayout, 300, 300);
+        Scene listUsersScene = new Scene(listUsersLayout, 600, 600);
 
         primaryStage.setScene(listUsersScene);
         primaryStage.show();
@@ -475,7 +515,7 @@ public class LoginPage extends Application {
         VBox updateRolesLayout = new VBox(10, updateUserRolesLabel, usernameField,
                 adminRole, instructorRole, studentRole,
                 addRole,removeRole, backButton);
-        Scene updateRolesScene = new Scene(updateRolesLayout, 300, 250);
+        Scene updateRolesScene = new Scene(updateRolesLayout, 600, 600);
 
         primaryStage.setScene(updateRolesScene);
         primaryStage.show();
@@ -524,7 +564,7 @@ public class LoginPage extends Application {
         backButton.setOnAction(e -> start(primaryStage));
 
         VBox newUserLayout = new VBox(10, createUserLabel, usernameField, passwordField,repasswordField, createUserButton, statusLabel, backButton);
-        Scene newUserScene = new Scene(newUserLayout, 300, 300);
+        Scene newUserScene = new Scene(newUserLayout, 600, 600);
 
         primaryStage.setScene(newUserScene);
         primaryStage.show();
@@ -565,7 +605,7 @@ public class LoginPage extends Application {
         backButton.setOnAction(e -> start(primaryStage));
 
         VBox newUserLayout = new VBox(10, passwordField,repasswordField, createUserButton, statusLabel, backButton);
-        Scene newUserScene = new Scene(newUserLayout, 300, 300);
+        Scene newUserScene = new Scene(newUserLayout, 600, 600);
 
         primaryStage.setScene(newUserScene);
         primaryStage.show();
@@ -615,7 +655,7 @@ public class LoginPage extends Application {
         backButton.setOnAction(e -> start(primaryStage));
 
         VBox newUserLayout = new VBox(10, createFristName, fristNameField,createMiddleName,middleNameField,createLastName,lastNameField, createUserButton, statusLabel, backButton);
-        Scene newUserScene = new Scene(newUserLayout, 300, 300);
+        Scene newUserScene = new Scene(newUserLayout, 600, 600);
 
         primaryStage.setScene(newUserScene);
         primaryStage.show();
@@ -649,7 +689,7 @@ public class LoginPage extends Application {
         backButton.setOnAction(e -> start(primaryStage));
 
         VBox inviteLayout = new VBox(10,emailLabel,emailField, inviteLabel, inviteField, enterInviteCodeButton, backButton);
-        Scene inviteScene = new Scene(inviteLayout, 300, 250);
+        Scene inviteScene = new Scene(inviteLayout, 600, 600);
 
         primaryStage.setScene(inviteScene);
         primaryStage.show();
@@ -867,6 +907,7 @@ public class LoginPage extends Application {
         Button updateGroupAccess = new Button("Update Group Access");
         Button updateGroupPermissions = new Button("Update Group Permissions");
         Button logoutButton = new Button("Logout");
+        Button viewMessages = new Button("View Messages");
 
         // New button to navigate to the Backup/Restore page
         Button backupRestoreButton = new Button("Backup/Restore");
@@ -878,6 +919,7 @@ public class LoginPage extends Application {
         deleteArticle.setOnAction(e -> showdeleteArticlePage(primaryStage));
         updateGroupAccess.setOnAction(e -> showSpecialAccessPage(primaryStage));
         updateGroupPermissions.setOnAction(e -> updateGroupPermissions(primaryStage));
+        viewMessages.setOnAction(e -> showMessages(primaryStage));
         logoutButton.setOnAction(e -> {
             App.logout();
             start(primaryStage);
@@ -887,8 +929,8 @@ public class LoginPage extends Application {
 
         // Layout for the Instructor Homepage
         VBox instructorLayout = new VBox(10, createArticle, viewArticle, editArticle, deleteArticle,
-                updateGroupAccess,updateGroupPermissions,backupRestoreButton, logoutButton);
-        Scene instructorScene = new Scene(instructorLayout, 300, 300);
+                backupRestoreButton, viewMessages, logoutButton);
+        Scene instructorScene = new Scene(instructorLayout, 600, 600);
 
         primaryStage.setScene(instructorScene);
         primaryStage.show();
@@ -1012,7 +1054,7 @@ public class LoginPage extends Application {
             backButton.setOnAction(e -> start(primaryStage));
 
             VBox listUsersLayout = new VBox(10, listUsersLabel, ArticleListView, backButton);
-            Scene listUsersScene = new Scene(listUsersLayout, 300, 300);
+            Scene listUsersScene = new Scene(listUsersLayout, 600, 600);
 
             primaryStage.setScene(listUsersScene);
             primaryStage.show();
@@ -1099,7 +1141,7 @@ public class LoginPage extends Application {
 
         backButton.setOnAction(e -> { start(primaryStage); });
         VBox newUserLayout = new VBox(10,deleteArticleLabel,deleteArticleField,deleteArticle,backButton,errorArea);
-        Scene newUserScene = new Scene(newUserLayout, 300, 300);
+        Scene newUserScene = new Scene(newUserLayout, 600, 600);
 
         primaryStage.setScene(newUserScene);
         primaryStage.show();
@@ -1292,14 +1334,12 @@ public class LoginPage extends Application {
             String groupName = groupNameField.getText().trim();
             if (groupName.isEmpty()) {
                 statusMessage.setText("Group name cannot be empty.");
-            }
-            else {
+            } else {
                 // Add to special access
                 boolean success = ArticleDatabase.addGroupToSpecialAccess(groupName);
                 if (success) {
                     statusMessage.setText("Group '" + groupName + "' added to special access.");
-                }
-                else {
+                } else {
                     statusMessage.setText("Failed to add group to special access.");
                 }
             }
