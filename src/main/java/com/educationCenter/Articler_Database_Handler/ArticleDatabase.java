@@ -3,10 +3,7 @@ package com.educationCenter.Articler_Database_Handler;
 import com.educationCenter.App;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
 
 public class ArticleDatabase {
 	public static ArticleDatabaseHelper articleDatabaseHelper; 					// Instantiate ArticleDatabaseHelper.
@@ -359,11 +356,15 @@ public class ArticleDatabase {
 
 	public static boolean removeGroupFromSpecialAccess(String groupName,String username) {
 		try{
+			if (!isCurrentAdminof(groupName) && !Arrays.asList(articleDatabaseHelper.returnGroupFromUser(App.getUserId(username))).contains(groupName)) {
+				return false;
+			}
 			if (username!=null){
 
 			if (App.getUsername().equals(username)) {
 				articleDatabaseHelper.DeleteGroup(groupName);
 			};
+
 			articleDatabaseHelper.DeleteUserAcessGroup(groupName,App.getUserId(username));
 
 			return true;
@@ -373,6 +374,23 @@ public class ArticleDatabase {
         }
         return false;
     }
+
+	public static boolean removeGroupFromSpecialAccess(String groupName) {
+		try{
+			if (!isCurrentAdminof(groupName)) {
+				return false;
+			}
+			articleDatabaseHelper.DeleteGroup(groupName);
+			articleDatabaseHelper.DeleteUserAcessGroup(groupName,0);
+			return true;
+
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		return false;
+	}
+
+
 
 	public static boolean addGroupToSpecialAccess(String groupName) {
         try {
@@ -385,9 +403,21 @@ public class ArticleDatabase {
         }
         return false;
     }
+
+	public static boolean isCurrentAdminof(String groupName){
+        try {
+            return Arrays.asList(articleDatabaseHelper.getGroupAdmin(groupName)).contains(App.getUserId(App.getUsername()));
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+		return false;
+    }
 	public static boolean addGroupToSpecialAccess(String groupName,int userid) {
 		try {
 
+			if (!isCurrentAdminof(groupName) && Arrays.asList(articleDatabaseHelper.returnGroupFromUser(userid)).contains(userid)) {
+				return false;
+			}
 			articleDatabaseHelper.addNewGroup(groupName, userid);
 			return true;
 
@@ -399,7 +429,11 @@ public class ArticleDatabase {
 
 	public static String[] returnUsersFromGroup(String groupName) {
         try {
+			if (!isCurrentAdminof(groupName)) {
+				return null;
+			}
 			int[] ids = articleDatabaseHelper.getGroupAdmin(groupName);
+
 			String[] admins = new String[ids.length];
 			for (int i = 0; i < ids.length; i++) {
 				admins[i] = App.returnUsername(ids[i]);

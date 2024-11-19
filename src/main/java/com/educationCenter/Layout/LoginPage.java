@@ -153,7 +153,7 @@ public class LoginPage extends Application {
         Button resetUserButton = new Button("Reset User");
         Button listUsersButton = new Button("List Users");
         Button updateUserRolesButton = new Button("Update User Roles");
-        Button showGroupAccess = new Button("Show Group Access");
+        Button updateGroupAccess = new Button("Update Group Access");
         Button updateGroupPermissions = new Button("Update Group Permissions");
 
         // Action for logout button to return to the login page
@@ -185,23 +185,13 @@ public class LoginPage extends Application {
 
         deleteArticle.setOnAction(e -> showdeleteArticlePage(primaryStage));
         ;
-        showGroupAccess.setOnAction(e -> showSpecialAccessPage(primaryStage));
-
-//        backupData.setOnAction(e -> {
-//            showbackupArticlePage(primaryStage);
-//        });
-//
-//        restoreData.setOnAction(e -> {
-//            showRestoreArticlePage(primaryStage);
-//        });
-        //Buttons for Phase 3
-
+        updateGroupAccess.setOnAction(e -> showSpecialAccessPage(primaryStage));
         updateGroupPermissions.setOnAction(e -> updateGroupPermissions(primaryStage));
 
 
         // Layout for the Admin Homepage
         VBox instructorLayout = new VBox(10, createArticle,viewArticle,editArticle,deleteArticle);
-        VBox adminLayout = new VBox(10, logoutButton, inviteUserButton, deleteUserButton, resetUserButton, listUsersButton, updateUserRolesButton, showGroupAccess, updateGroupPermissions);
+        VBox adminLayout = new VBox(10, logoutButton, inviteUserButton, deleteUserButton, resetUserButton, listUsersButton, updateUserRolesButton, updateGroupAccess, updateGroupPermissions);
         HBox mainAdminLayout = new HBox(10, adminLayout, instructorLayout);
         Scene adminScene = new Scene(mainAdminLayout, 300, 300);
 
@@ -268,7 +258,7 @@ public class LoginPage extends Application {
         HBox accessButtons = new HBox(10, addAccess, viewAccess, removeAccess);
         HBox adminAccessButtons = new HBox(10, addAdminAccess, viewAdminAccess, removeAdminAccess);
         VBox modifyGroupPage = new VBox(10, userField, groupField, accessButtons,adminAccessButtons, backButton);
-        Scene updateGroupsScene = new Scene(modifyGroupPage, 300, 250);
+        Scene updateGroupsScene = new Scene(modifyGroupPage, 500, 350);
 
         primaryStage.setScene(updateGroupsScene);
         primaryStage.show();
@@ -823,6 +813,8 @@ public class LoginPage extends Application {
         Button editArticle = new Button("Edit Article");
         Button viewArticle = new Button("View Article");
         Button deleteArticle = new Button("Delete Article");
+        Button updateGroupAccess = new Button("Update Group Access");
+        Button updateGroupPermissions = new Button("Update Group Permissions");
         Button logoutButton = new Button("Logout");
 
         // New button to navigate to the Backup/Restore page
@@ -833,6 +825,8 @@ public class LoginPage extends Application {
         editArticle.setOnAction(e -> showlistArticlePage(primaryStage, "edit"));
         viewArticle.setOnAction(e -> showlistArticlePage(primaryStage, "view"));
         deleteArticle.setOnAction(e -> showdeleteArticlePage(primaryStage));
+        updateGroupAccess.setOnAction(e -> showSpecialAccessPage(primaryStage));
+        updateGroupPermissions.setOnAction(e -> updateGroupPermissions(primaryStage));
         logoutButton.setOnAction(e -> {
             App.logout();
             start(primaryStage);
@@ -842,7 +836,7 @@ public class LoginPage extends Application {
 
         // Layout for the Instructor Homepage
         VBox instructorLayout = new VBox(10, createArticle, viewArticle, editArticle, deleteArticle,
-                backupRestoreButton, logoutButton);
+                updateGroupAccess,updateGroupPermissions,backupRestoreButton, logoutButton);
         Scene instructorScene = new Scene(instructorLayout, 300, 300);
 
         primaryStage.setScene(instructorScene);
@@ -1264,7 +1258,7 @@ public class LoginPage extends Application {
                 statusMessage.setText("Group name cannot be empty.");
             } else {
                 // Remove from special access
-                boolean success = ArticleDatabase.removeGroupFromSpecialAccess(groupName,App.getUsername());
+                boolean success = ArticleDatabase.removeGroupFromSpecialAccess(groupName);
                 if (success) {
                     statusMessage.setText("Group '" + groupName + "' removed from special access.");
                 } else {

@@ -149,8 +149,12 @@ class ArticleDatabaseHelper {
 	}
 
 		public void DeleteUserAcessGroup(String groupName,int userid ) throws SQLException {
-			String sql = "DELETE FROM cse360groups WHERE groupName = ? AND groupAdmin = ?";
-
+		String sql;
+		if (userid == 0){
+			sql = "DELETE FROM cse360users WHERE groupName = ?";
+		}else {
+			sql = "DELETE FROM cse360groups WHERE groupName = ? AND groupAdmin = ?";
+		}
 			try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
 				preparedStatement.setString(1, groupName);
 				preparedStatement.setInt(2, userid);
@@ -932,6 +936,17 @@ class ArticleDatabaseHelper {
 
         }
 
+
+		public void deleteSpecialAccess(int userId,String groupName) throws SQLException{
+			String sql = "DELETE FROM cse360access WHERE userId = ? AND groupName = ?";
+			try(PreparedStatement pstmt = connection.prepareStatement(sql)) {
+				pstmt.setInt(1, userId);
+				pstmt.setString(2, groupName);
+
+				pstmt.executeUpdate();
+			}
+		}
+
         public void displayArticlesByGrouping(String grouping) throws Exception {
 		String sql = "SELECT * FROM cse360articles";
 		Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
@@ -1014,30 +1029,7 @@ class ArticleDatabaseHelper {
 		}
 		return articleFound;
 	}
-	public String[] checkSpecialAcesss(String userId) throws SQLException{
-			String sql = "SELECT * FROM cse360access Where userId = ?";
 
-			List<String> groupNameList = new ArrayList<>();
-			try(PreparedStatement pstmt = connection.prepareStatement(sql)) {
-				pstmt.setString(1, userId);
-				ResultSet rs = pstmt.executeQuery();
-				if (rs.next()) {
-					groupNameList.add(rs.getString("groupName"));
-				}
-				return groupNameList.toArray(new String[groupNameList.size()]);
-			}
-		}
-
-
-	public void deleteSpecialAccess(int userId,String groupName) throws SQLException{
-		String sql = "DELETE FROM cse360access WHERE userId = ? AND groupName = ?";
-		try(PreparedStatement pstmt = connection.prepareStatement(sql)) {
-			pstmt.setInt(1, userId);
-			pstmt.setString(2, groupName);
-
-			pstmt.executeUpdate();
-		}
-	}
 
 
 	public int checkSensByKey(int key) throws Exception{
