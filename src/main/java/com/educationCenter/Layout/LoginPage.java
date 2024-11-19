@@ -332,8 +332,7 @@ public class LoginPage extends Application {
 
     // Method to navigate to the update user roles page
     private void showUpdateUserRolesPage(Stage primaryStage) {
-        // Label and TextField for username input
-        Label updateUserRolesLabel = new Label("Enter the username you want to change:");
+        Label updateUserRolesLabel = new Label("Enter the username to modify:");
         TextField usernameField = new TextField();
         usernameField.setPromptText("Username");
 
@@ -342,57 +341,67 @@ public class LoginPage extends Application {
         RadioButton instructorRole = new RadioButton("Instructor");
         RadioButton studentRole = new RadioButton("Student");
 
-        // Group the radio buttons so only one can be selected at a time
         ToggleGroup roleGroup = new ToggleGroup();
         adminRole.setToggleGroup(roleGroup);
         instructorRole.setToggleGroup(roleGroup);
         studentRole.setToggleGroup(roleGroup);
 
-        // Confirm button
-        Button addRole = new Button("Add Role");
-        Button removeRole = new Button("Delete Role");
-        //Hello world
+        Button addRoleButton = new Button("Add Role");
+        Button removeRoleButton = new Button("Remove Role");
         Button backButton = new Button("Back");
 
-        // Action for the Confirm Change button
-        addRole.setOnAction(e -> {
-            String username = usernameField.getText();
+        Label statusMessage = new Label("");
+
+        // Action for adding roles
+        addRoleButton.setOnAction(e -> {
+            String username = usernameField.getText().trim();
             RadioButton selectedRole = (RadioButton) roleGroup.getSelectedToggle();
 
             if (username.isEmpty() || selectedRole == null) {
-                System.out.println("Please enter a username and select a role.");
+                statusMessage.setText("Please enter a username and select a role.");
             } else {
                 String role = selectedRole.getText().toLowerCase();
-                App.addOrRemoveRole(username,"add",role);
-                System.out.println("Role of " + username + " updated to " + role);
+                if (App.addOrRemoveRole(username, "add", role)) {
+                    statusMessage.setText("Role added successfully for " + username + ".");
+                } else {
+                    statusMessage.setText("Failed to add role for " + username + ".");
+                }
             }
         });
 
-        removeRole.setOnAction(e -> {
-            String username = usernameField.getText();
+
+        // Action for removing roles
+        removeRoleButton.setOnAction(e -> {
+            String username = usernameField.getText().trim();
             RadioButton selectedRole = (RadioButton) roleGroup.getSelectedToggle();
 
             if (username.isEmpty() || selectedRole == null) {
-                System.out.println("Please enter a username and select a role.");
+                statusMessage.setText("Please enter a username and select a role.");
             } else {
-                String role = selectedRole.getText();
-                App.addOrRemoveRole(username,"remove",role);
-                System.out.println("Role of " + username + " remove " + role);
+                String role = selectedRole.getText().toLowerCase();
+
+                // Check if removing admin rights would leave no admins
+                if (role.equals("admin") && !App.canRemoveAdminRole(username)) {
+                    statusMessage.setText("Cannot remove admin rights. At least one admin is required.");
+                } else if (App.addOrRemoveRole(username, "remove", role)) {
+                    statusMessage.setText("Role removed successfully for " + username + ".");
+                } else {
+                    statusMessage.setText("Failed to remove role for " + username + ".");
+                }
             }
         });
 
-        // Action for the Back button
+        // Back button action
         backButton.setOnAction(e -> showAdminHomepage(primaryStage));
 
-        // Layout for the Update User Roles scene
-        VBox updateRolesLayout = new VBox(10, updateUserRolesLabel, usernameField,
-                adminRole, instructorRole, studentRole,
-                addRole,removeRole, backButton);
-        Scene updateRolesScene = new Scene(updateRolesLayout, 300, 250);
-
+        // Layout
+        VBox updateRolesLayout = new VBox(10, updateUserRolesLabel, usernameField, adminRole, instructorRole,
+                studentRole, addRoleButton, removeRoleButton, statusMessage, backButton);
+        Scene updateRolesScene = new Scene(updateRolesLayout, 400, 300);
         primaryStage.setScene(updateRolesScene);
         primaryStage.show();
     }
+
 
     // Method to navigate to the new user creation page
     public void showNewUserCreation(Stage primaryStage,String email){
@@ -605,6 +614,9 @@ public class LoginPage extends Application {
     }
 
     private void showSearchPage(Stage primaryStage) {
+        // Active Group Display
+        Label activeGroupLabel = new Label("Current Group: All");
+
         // Content Level and Group Selection
         ComboBox<String> contentLevelComboBox = new ComboBox<>();
         contentLevelComboBox.getItems().addAll("Beginner", "Intermediate", "Advanced", "Expert", "All");
@@ -622,26 +634,50 @@ public class LoginPage extends Application {
         ListView<String> searchResultsListView = new ListView<>();
         searchResultsListView.setPrefHeight(150);
 
+        // Labels for displaying counts of matching articles by level
+        Label levelCountsLabel = new Label();
+
         // Search action to display results
         searchButton.setOnAction(e -> {
             String query = searchField.getText();
             String level = contentLevelComboBox.getValue();
             String group = groupComboBox.getValue();
 
+            // Update active group label
+            activeGroupLabel.setText("Current Group: " + group);
+
             // Call searchArticles and update ListView with results
             String[][] searchResults = ArticleDatabase.searchArticles(query, level, group);
             searchResultsListView.getItems().clear();
 
             if (searchResults != null && searchResults.length > 0) {
+                // Count articles by level
+                int beginnerCount = 0, intermediateCount = 0, advancedCount = 0, expertCount = 0;
+
                 for (String[] article : searchResults) {
                     String title = article[1];
                     String author = article[2];
                     String abstractText = article[3];
+                    String difficulty = article[4];
                     String summary = "Title: " + title + ", Author: " + author + ", Abstract: " + abstractText;
+
+                    // Update counts
+                    switch (difficulty.toLowerCase()) {
+                        case "beginner" -> beginnerCount++;
+                        case "intermediate" -> intermediateCount++;
+                        case "advanced" -> advancedCount++;
+                        case "expert" -> expertCount++;
+                    }
+
                     searchResultsListView.getItems().add(summary);
                 }
+
+                // Update level counts label
+                levelCountsLabel.setText(String.format("Beginner: %d, Intermediate: %d, Advanced: %d, Expert: %d",
+                        beginnerCount, intermediateCount, advancedCount, expertCount));
             } else {
                 searchResultsListView.getItems().add("No articles found matching the criteria.");
+                levelCountsLabel.setText("");
             }
         });
 
@@ -657,15 +693,34 @@ public class LoginPage extends Application {
             }
         });
 
-        // Navigation button to go back to Help page
+        // Manage Groups
+        Button listGroupsButton = new Button("List Available Groups");
+        listGroupsButton.setOnAction(e -> {
+            String[] groups = ArticleDatabase.listGroups(); // Replace with your actual method to fetch groups
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Available Groups");
+            alert.setHeaderText("List of Groups");
+            alert.setContentText(String.join("\n", groups));
+            alert.showAndWait();
+        });
+
+        Button resetGroupButton = new Button("Reset to All Groups");
+        resetGroupButton.setOnAction(e -> {
+            groupComboBox.setValue("All");
+            activeGroupLabel.setText("Current Group: All");
+        });
+
+        // Buttons for navigation and additional actions
         Button goToHelpPageButton = new Button("Go to Help Page");
         goToHelpPageButton.setOnAction(e -> showHelpPage(primaryStage));
 
         // Layout for Search Page
         VBox searchLayout = new VBox(10,
+                activeGroupLabel,
                 new Label("Content Level:"), contentLevelComboBox,
                 new Label("Group:"), groupComboBox,
-                searchField, searchButton, searchResultsListView, viewArticleButton, goToHelpPageButton);
+                searchField, searchButton, levelCountsLabel, searchResultsListView, viewArticleButton,
+                listGroupsButton, resetGroupButton, goToHelpPageButton);
         searchLayout.setPadding(new Insets(15));
 
         Scene searchScene = new Scene(searchLayout, 400, 500);
@@ -673,6 +728,7 @@ public class LoginPage extends Application {
         primaryStage.setTitle("Search Articles");
         primaryStage.show();
     }
+
 
     // Helper method to extract article ID from selected summary (implement as needed)
     private String extractArticleID(String selectedArticle) {

@@ -367,4 +367,9 @@ public class ArticleDatabase {
 
         return false;
     }
+
+	public static String[] listGroups() {
+
+        return new String[0];
+    }
 }
