@@ -183,7 +183,7 @@ public class MessageDatabaseHelper {
 	public String[] getStringArrayFromResult(ResultSet rs) throws SQLException {
 		String[] values = new String[8];
 
-		for (int i = 0; i < 8; i++) {
+		for (int i = 0; i < 5; i++) {
 			values[i] = rs.getString(i+1);
 		}
 
@@ -198,6 +198,7 @@ public class MessageDatabaseHelper {
 		List<String[]> messageList = new ArrayList<>();
 
 		while (rs.next()) {
+			System.out.println("Inside while rs.next()");
 			// Retrieve data from ResultSet and store it in a String array
 			String[] data = getStringArrayFromResult(rs);
 			messageList.add(data);
@@ -208,6 +209,15 @@ public class MessageDatabaseHelper {
 		messages = messageList.toArray(messages);
 
 		return messages;
+	}
+
+	public void clearAllMessages() throws SQLException{
+		String query = "DELETE FROM messageDatabase";
+		try (PreparedStatement stmt = connection.prepareStatement(query)) {
+			stmt.executeUpdate();
+			System.out.println("Cleared all messages");
+		}
+
 	}
 	/*
 	public String[] doesUserExist(String username) {

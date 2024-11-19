@@ -30,7 +30,7 @@ public class ArticleDatabase {
 	// New searchArticles method to filter articles based on query, level, and group
 	public static String[][] searchArticles(String query, String level, String group) {
 		List<String[]> results = new ArrayList<>();
-
+		App.addToSearchHistory(query + " " + level + " " + group);
 		try {
 			// Fetch all articles from the database
 			String[] groups=  articleDatabaseHelper.returnGroupFromUser(App.getUserId(App.getUsername()));

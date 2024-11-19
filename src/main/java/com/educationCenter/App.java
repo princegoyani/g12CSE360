@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.ArrayList;
 
 import com.educationCenter.User_Database_Handler.MessageDatabaseHelper;
 import com.educationCenter.User_Database_Handler.UserDatabaseHelper;
@@ -16,6 +17,7 @@ public class App {
 	private static String username;
 	private static String password;
 	private static String activeRole;
+	private static ArrayList<String> searchHistory = new ArrayList<>();
 	public static String getActiveRole(){
 		return activeRole;
 	}
@@ -199,6 +201,7 @@ public class App {
 		password=null;
 		datas=null;
 		activeRole=null;
+		clearSearchHistory();
 		}
 	public static int getUserId(String user){
 		return USER_DATABASE_HELPER.getUserId(user);
@@ -444,6 +447,15 @@ public class App {
 			}
 			return null;
 		}
+	public static String[][] listOfMessages(){
+		try {
+			System.out.println("Returning list of messages...");
+			return MESSAGE_DATABASE_HELPER.getAllMessages();
+		}catch (SQLException e){
+			System.out.println(e);
+		}
+		return null;
+	}
 		public static void adminHome() throws SQLException {
 			System.out.println("1.logout 2.Add User 3. Delete User 4.List Users 5. Add Role to user");
 			String command = scanner.nextLine();
@@ -521,12 +533,18 @@ public class App {
 				}
 			}
 
-	public static void sendGenericMessage(int ID, String message) {
+	public static void sendGenericMessage(String message) {
 		if (message != null && !message.isEmpty()) {
 			try {
-				MESSAGE_DATABASE_HELPER.addMessage(ID, 0, message, "no searches");
+				String searches = "No Searches";
+				if(!getSearchHistory().isEmpty()) {
+					searches = "";
+					for (String i : getSearchHistory()) {
+						searches = searches + " " + i;
+					}
+				}
+				MESSAGE_DATABASE_HELPER.addMessage(getUserId(getUsername()), 0, message, searches);
 				System.out.println("Sending generic message to help system: " + message);
-				//possibly add code to save the message to a database/log it
 			} catch (SQLException e) {
 					System.out.println(e.getMessage());
 				}
@@ -535,12 +553,18 @@ public class App {
 		}
 	}
 
-	public static void sendSpecificMessage(int ID, String message) {
+	public static void sendSpecificMessage(String message) {
 		if (message != null && !message.isEmpty()) {
 			try {
-				MESSAGE_DATABASE_HELPER.addMessage(ID, 1, message, "no searches");
+				String searches = "No Searches";
+				if(!getSearchHistory().isEmpty()) {
+					searches = "";
+					for (String i : getSearchHistory()) {
+						searches = searches + " " + i;
+					}
+				}
+				MESSAGE_DATABASE_HELPER.addMessage(getUserId(getUsername()), 1, message, searches);
 				System.out.println("Sending specific message to help system: " + message);
-				//also maybe add to save message to database/log it
 			} catch (SQLException e) {
 				System.out.println(e.getMessage());
 			}
@@ -548,6 +572,16 @@ public class App {
 			System.out.println("Message is empty. Cannot send.");
 		}
 	}
-
-
+	public static void addToSearchHistory(String history){
+		searchHistory.add(history);
+	}
+	public static void clearSearchHistory(){
+		searchHistory.clear();
+	}
+	public static ArrayList<String> getSearchHistory(){
+		return searchHistory;
+	}
+	public static void clearAllMessages() throws SQLException {
+		MESSAGE_DATABASE_HELPER.clearAllMessages();
+	}
 }
