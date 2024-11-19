@@ -1303,7 +1303,6 @@ public class LoginPage extends Application {
         primaryStage.show();
     }
 
-
     private void showManageStudentsInGroupPage(Stage primaryStage, String groupName) {
         Label groupLabel = new Label("Manage Students in Group: " + groupName);
         ListView<String> studentListView = new ListView<>();
@@ -1403,8 +1402,6 @@ public class LoginPage extends Application {
         primaryStage.setTitle("Manage Special Access");
         primaryStage.show();
     }
-
-
 
     public static void main(String[] args) {
         launch(args);
