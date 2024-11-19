@@ -72,7 +72,7 @@ public class LoginPage extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
     }
-    private void showSelectRoletologin(Stage primaryStage,String username) {
+    private void showSelectRoletologin(Stage primaryStage, String username) {
 
         // Label and TextField for username input
         Label updateUserRolesLabel = new Label("Enter application with :");
@@ -668,10 +668,10 @@ public class LoginPage extends Application {
 
         // Buttons for sending generic and specific messages
         Button sendGenericMessageButton = new Button("Send Generic Message");
-        sendGenericMessageButton.setOnAction(e -> sendGenericMessage(messageArea.getText()));
+        sendGenericMessageButton.setOnAction(e -> sendGenericMessage(0,messageArea.getText()));
 
         Button sendSpecificMessageButton = new Button("Send Specific Message");
-        sendSpecificMessageButton.setOnAction(e -> sendSpecificMessage(messageArea.getText()));
+        sendSpecificMessageButton.setOnAction(e -> sendSpecificMessage(1,messageArea.getText()));
 
         // Group buttons horizontally
         HBox messageButtons = new HBox(10, sendGenericMessageButton, sendSpecificMessageButton);
@@ -802,16 +802,16 @@ public class LoginPage extends Application {
         }
     }
 
-    private void sendGenericMessage(String message) {
+    private void sendGenericMessage(int ID, String message) {
         if (!message.isEmpty()) {
-            App.sendGenericMessage(message);
+            App.sendGenericMessage(ID, message);
             System.out.println("Generic message sent: " + message);
         }
     }
 
-    private void sendSpecificMessage(String message) {
+    private void sendSpecificMessage(int ID, String message) {
         if (!message.isEmpty()) {
-            App.sendSpecificMessage(message);
+            App.sendSpecificMessage(ID,message);
             System.out.println("Specific message sent: " + message);
         }
     }

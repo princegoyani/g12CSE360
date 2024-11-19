@@ -6,10 +6,12 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
+import com.educationCenter.User_Database_Handler.MessageDatabaseHelper;
 import com.educationCenter.User_Database_Handler.UserDatabaseHelper;
 
 public class App {
 	private static final UserDatabaseHelper USER_DATABASE_HELPER = new UserDatabaseHelper();
+	private static final MessageDatabaseHelper MESSAGE_DATABASE_HELPER = new MessageDatabaseHelper();
 	private static final Scanner scanner = new Scanner(System.in);
 	private static String username;
 	private static String password;
@@ -28,7 +30,7 @@ public class App {
 
     	try {
     		USER_DATABASE_HELPER.userConnectToDatabase(); // connecting to database
-
+			MESSAGE_DATABASE_HELPER.messageConnectToDatabase();
     		while (true){
 
 	    		if (USER_DATABASE_HELPER.isDatabaseEmpty()) {
@@ -92,6 +94,7 @@ public class App {
 
 	public static boolean connect(){
 		try {
+			MESSAGE_DATABASE_HELPER.messageConnectToDatabase();
 			if (USER_DATABASE_HELPER.userConnectToDatabase()) {
 				return true;
 			}
@@ -518,19 +521,29 @@ public class App {
 				}
 			}
 
-	public static void sendGenericMessage(String message) {
+	public static void sendGenericMessage(int ID, String message) {
 		if (message != null && !message.isEmpty()) {
-			System.out.println("Sending generic message to help system: " + message);
-			//possibly add code to save the message to a database/log it
+			try {
+				MESSAGE_DATABASE_HELPER.addMessage(ID, 0, message, "no searches");
+				System.out.println("Sending generic message to help system: " + message);
+				//possibly add code to save the message to a database/log it
+			} catch (SQLException e) {
+					System.out.println(e.getMessage());
+				}
 		} else {
 			System.out.println("Message is empty. Cannot send.");
 		}
 	}
 
-	public static void sendSpecificMessage(String message) {
+	public static void sendSpecificMessage(int ID, String message) {
 		if (message != null && !message.isEmpty()) {
-			System.out.println("Sending specific message to help system: " + message);
-			//also maybe add to save message to database/log it
+			try {
+				MESSAGE_DATABASE_HELPER.addMessage(ID, 1, message, "no searches");
+				System.out.println("Sending specific message to help system: " + message);
+				//also maybe add to save message to database/log it
+			} catch (SQLException e) {
+				System.out.println(e.getMessage());
+			}
 		} else {
 			System.out.println("Message is empty. Cannot send.");
 		}
