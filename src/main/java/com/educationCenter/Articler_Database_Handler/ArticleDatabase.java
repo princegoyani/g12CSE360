@@ -372,4 +372,50 @@ public class ArticleDatabase {
 
         return new String[0];
     }
+
+	public static void deleteGroup(String selectedGroup) {
+	}
+
+	public static void deleteSpecialAccessGroup(String selectedGroup) {
+	}
+
+	public static String[] listSpecialAccessGroups() {
+
+        return new String[0];
+    }
+
+	public static boolean removeStudentFromGroup(String selectedStudent, String groupName) {
+
+        return false;
+    }
+
+	public static boolean addStudentToGroup(String email, String groupName) {
+
+        return false;
+    }
+
+	public static String listStudentsInGroup(String groupName) {
+
+        return groupName;
+    }
+
+	public static boolean createSpecialAccessGroup(String groupName) {
+
+        return false;
+    }
+
+	public static boolean createGroup(String groupName) {
+
+        return false;
+    }
+
+	public static boolean updateSpecialAccessGroup(String selectedGroup, String newGroupName) {
+
+        return false;
+    }
+
+	public static boolean updateGroup(String selectedGroup, String newGroupName) {
+
+	return false;
+	}
 }

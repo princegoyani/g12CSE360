@@ -1184,6 +1184,166 @@ public class LoginPage extends Application {
         primaryStage.setScene(createArticleScene);
         primaryStage.show();
     }
+    private void showGroupManagementPage(Stage primaryStage, boolean isSpecialAccess) {
+        Label groupLabel = new Label(isSpecialAccess ? "Manage Special Access Groups" : "Manage General Groups");
+        ListView<String> groupListView = new ListView<>();
+
+        // Fetch groups
+        String[] groups = isSpecialAccess ? ArticleDatabase.listSpecialAccessGroups() : ArticleDatabase.listGroups();
+        for (String group : groups) {
+            groupListView.getItems().add(group);
+        }
+
+        // Buttons for actions
+        Button createGroupButton = new Button("Create Group");
+        Button editGroupButton = new Button("Edit Group");
+        Button deleteGroupButton = new Button("Delete Group");
+        Button backButton = new Button("Back");
+
+        // Create group
+        createGroupButton.setOnAction(e -> showCreateGroupPage(primaryStage, isSpecialAccess));
+
+        // Edit group
+        editGroupButton.setOnAction(e -> {
+            String selectedGroup = groupListView.getSelectionModel().getSelectedItem();
+            if (selectedGroup != null) {
+                showEditGroupPage(primaryStage, selectedGroup, isSpecialAccess);
+            }
+        });
+
+        // Delete group
+        deleteGroupButton.setOnAction(e -> {
+            String selectedGroup = groupListView.getSelectionModel().getSelectedItem();
+            if (selectedGroup != null) {
+                if (isSpecialAccess) {
+                    ArticleDatabase.deleteSpecialAccessGroup(selectedGroup);
+                } else {
+                    ArticleDatabase.deleteGroup(selectedGroup);
+                }
+                groupListView.getItems().remove(selectedGroup);
+            }
+        });
+
+        backButton.setOnAction(e -> showInstructorPage(primaryStage));
+
+        VBox layout = new VBox(10, groupLabel, groupListView, createGroupButton, editGroupButton, deleteGroupButton, backButton);
+        layout.setPadding(new Insets(15));
+
+        Scene scene = new Scene(layout, 400, 400);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    private void showCreateGroupPage(Stage primaryStage, boolean isSpecialAccess) {
+        Label groupLabel = new Label("Create New " + (isSpecialAccess ? "Special Access" : "General") + " Group");
+        TextField groupNameField = new TextField();
+        groupNameField.setPromptText("Enter group name");
+
+        Button createGroupButton = new Button("Create Group");
+        Button backButton = new Button("Back");
+
+        createGroupButton.setOnAction(e -> {
+            String groupName = groupNameField.getText().trim();
+            if (!groupName.isEmpty()) {
+                boolean success = isSpecialAccess ?
+                        ArticleDatabase.createSpecialAccessGroup(groupName) :
+                        ArticleDatabase.createGroup(groupName);
+
+                if (success) {
+                    System.out.println(groupName + " group created successfully.");
+                    showGroupManagementPage(primaryStage, isSpecialAccess);
+                } else {
+                    System.out.println("Failed to create group.");
+                }
+            }
+        });
+
+        backButton.setOnAction(e -> showGroupManagementPage(primaryStage, isSpecialAccess));
+
+        VBox layout = new VBox(10, groupLabel, groupNameField, createGroupButton, backButton);
+        layout.setPadding(new Insets(15));
+
+        Scene scene = new Scene(layout, 400, 300);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+
+    private void showEditGroupPage(Stage primaryStage, String selectedGroup, boolean isSpecialAccess) {
+        Label groupLabel = new Label("Edit Group: " + selectedGroup);
+        TextField groupNameField = new TextField(selectedGroup);
+        groupNameField.setPromptText("Enter new group name");
+
+        Button updateGroupButton = new Button("Update Group");
+        Button backButton = new Button("Back");
+
+        updateGroupButton.setOnAction(e -> {
+            String newGroupName = groupNameField.getText().trim();
+            if (!newGroupName.isEmpty()) {
+                boolean success = isSpecialAccess ?
+                        ArticleDatabase.updateSpecialAccessGroup(selectedGroup, newGroupName) :
+                        ArticleDatabase.updateGroup(selectedGroup, newGroupName);
+
+                if (success) {
+                    System.out.println("Group updated successfully to " + newGroupName);
+                    showGroupManagementPage(primaryStage, isSpecialAccess);
+                } else {
+                    System.out.println("Failed to update group.");
+                }
+            }
+        });
+
+        backButton.setOnAction(e -> showGroupManagementPage(primaryStage, isSpecialAccess));
+
+        VBox layout = new VBox(10, groupLabel, groupNameField, updateGroupButton, backButton);
+        layout.setPadding(new Insets(15));
+
+        Scene scene = new Scene(layout, 400, 300);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+
+    private void showManageStudentsInGroupPage(Stage primaryStage, String groupName) {
+        Label groupLabel = new Label("Manage Students in Group: " + groupName);
+        ListView<String> studentListView = new ListView<>();
+        studentListView.getItems().addAll(ArticleDatabase.listStudentsInGroup(groupName));
+
+        // Buttons for actions
+        Button addStudentButton = new Button("Add Student");
+        Button removeStudentButton = new Button("Remove Student");
+        Button backButton = new Button("Back");
+
+        // Add student
+        addStudentButton.setOnAction(e -> {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Add Student");
+            dialog.setHeaderText("Enter the student's email:");
+            dialog.showAndWait().ifPresent(email -> {
+                if (ArticleDatabase.addStudentToGroup(email, groupName)) {
+                    studentListView.getItems().add(email);
+                }
+            });
+        });
+
+        // Remove student
+        removeStudentButton.setOnAction(e -> {
+            String selectedStudent = studentListView.getSelectionModel().getSelectedItem();
+            if (selectedStudent != null) {
+                if (ArticleDatabase.removeStudentFromGroup(selectedStudent, groupName)) {
+                    studentListView.getItems().remove(selectedStudent);
+                }
+            }
+        });
+
+        backButton.setOnAction(e -> showGroupManagementPage(primaryStage, false));
+
+        VBox layout = new VBox(10, groupLabel, studentListView, addStudentButton, removeStudentButton, backButton);
+        layout.setPadding(new Insets(15));
+        Scene scene = new Scene(layout, 400, 400);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
 
     private void showSpecialAccessPage(Stage primaryStage) {
         // Labels and input field
@@ -1194,21 +1354,21 @@ public class LoginPage extends Application {
         // Buttons for adding and removing special access
         Button addSpecialAccessButton = new Button("Add to Special Access Only");
         Button removeSpecialAccessButton = new Button("Remove from Special Access Only");
-
         // Status message for feedback
         Label statusMessage = new Label("");
-
         // Button actions
         addSpecialAccessButton.setOnAction(e -> {
             String groupName = groupNameField.getText().trim();
             if (groupName.isEmpty()) {
                 statusMessage.setText("Group name cannot be empty.");
-            } else {
+            }
+            else {
                 // Add to special access
                 boolean success = ArticleDatabase.addGroupToSpecialAccess(groupName);
                 if (success) {
                     statusMessage.setText("Group '" + groupName + "' added to special access.");
-                } else {
+                }
+                else {
                     statusMessage.setText("Failed to add group to special access.");
                 }
             }
@@ -1229,11 +1389,11 @@ public class LoginPage extends Application {
             }
         });
 
-        // Back button to return to the Instructor Page
+        // Back button
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> showInstructorPage(primaryStage));
 
-        // Layout for the Special Access Page
+        // Layout
         VBox specialAccessLayout = new VBox(10, groupNameLabel, groupNameField,
                 addSpecialAccessButton, removeSpecialAccessButton, statusMessage, backButton);
         specialAccessLayout.setPadding(new Insets(15));
@@ -1243,6 +1403,8 @@ public class LoginPage extends Application {
         primaryStage.setTitle("Manage Special Access");
         primaryStage.show();
     }
+
+
 
     public static void main(String[] args) {
         launch(args);
