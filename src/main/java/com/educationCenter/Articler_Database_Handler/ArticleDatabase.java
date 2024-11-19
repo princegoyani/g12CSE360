@@ -1,5 +1,7 @@
 package com.educationCenter.Articler_Database_Handler;
 
+import com.educationCenter.App;
+
 import java.sql.SQLException;
 import java.util.*;
 
@@ -445,5 +447,13 @@ public class ArticleDatabase {
 
 	public static String[] returnGroupsFromUser(String username) {
 		return articleDatabaseHelper.returnGroupFromUser(App.getUserId(username));
+	}
+
+	public static String[] listGroups() {
+		return null;
+	}
+
+	public static String[] listSpecialAccessGroups() {
+		return null;
 	}
 }
