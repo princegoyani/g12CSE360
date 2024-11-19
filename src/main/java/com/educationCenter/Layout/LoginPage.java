@@ -158,6 +158,7 @@ public class LoginPage extends Application {
         Button updateGroupPermissions = new Button("Update Group Permissions");
         Button viewMessages = new Button("View Messages");
 
+
         // Action for logout button to return to the login page
         logoutButton.setOnAction(e -> {
             App.logout();
@@ -863,6 +864,7 @@ public class LoginPage extends Application {
         Button viewArticle = new Button("View Article");
         Button deleteArticle = new Button("Delete Article");
         Button logoutButton = new Button("Logout");
+        Button viewMessages = new Button("View Messages");
 
         // New button to navigate to the Backup/Restore page
         Button backupRestoreButton = new Button("Backup/Restore");
@@ -872,6 +874,7 @@ public class LoginPage extends Application {
         editArticle.setOnAction(e -> showlistArticlePage(primaryStage, "edit"));
         viewArticle.setOnAction(e -> showlistArticlePage(primaryStage, "view"));
         deleteArticle.setOnAction(e -> showdeleteArticlePage(primaryStage));
+        viewMessages.setOnAction(e -> showMessages(primaryStage));
         logoutButton.setOnAction(e -> {
             App.logout();
             start(primaryStage);
@@ -881,7 +884,7 @@ public class LoginPage extends Application {
 
         // Layout for the Instructor Homepage
         VBox instructorLayout = new VBox(10, createArticle, viewArticle, editArticle, deleteArticle,
-                backupRestoreButton, logoutButton);
+                backupRestoreButton, viewMessages, logoutButton);
         Scene instructorScene = new Scene(instructorLayout, 600, 600);
 
         primaryStage.setScene(instructorScene);
