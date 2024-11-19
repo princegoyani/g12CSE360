@@ -537,4 +537,8 @@ public class App {
 	}
 
 
+	public static boolean canRemoveAdminRole(String username) {
+
+        return false;
+    }
 }

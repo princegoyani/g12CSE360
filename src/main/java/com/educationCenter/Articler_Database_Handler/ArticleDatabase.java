@@ -1,7 +1,5 @@
 package com.educationCenter.Articler_Database_Handler;
 
-import com.educationCenter.App;
-
 import java.sql.SQLException;
 import java.util.*;
 
