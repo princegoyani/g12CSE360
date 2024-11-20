@@ -159,59 +159,54 @@ public class LoginPage extends Application {
         Button listUsersButton = new Button("List Users");
         Button updateUserRolesButton = new Button("Update User Roles");
 
+        // Buttons for article management (restricted to create and delete only)
+        Button createArticleButton = new Button("Create Article");
+        Button deleteArticleButton = new Button("Delete Article");
+
+        // Buttons for group management
+        Button manageGroupsButton = new Button("Manage General Groups");
+        Button manageSpecialAccessGroupsButton = new Button("Manage Special Access Groups");
+
+        // Buttons for backup and restore functionality
+        Button backupRestoreButton = new Button("Backup/Restore");
+
         // Action for logout button to return to the login page
         logoutButton.setOnAction(e -> {
             App.logout();
-            start(primaryStage);  // Navigate back to the login page
+            start(primaryStage); // Navigate back to the login page
         });
 
-        // Button actions
+        // Button actions for existing admin features
         inviteUserButton.setOnAction(e -> showInviteUserPage(primaryStage));
         deleteUserButton.setOnAction(e -> showDeleteUserPage(primaryStage));
         resetUserButton.setOnAction(e -> showResetUserPage(primaryStage));
         listUsersButton.setOnAction(e -> showListUsersPage(primaryStage));
         updateUserRolesButton.setOnAction(e -> showUpdateUserRolesPage(primaryStage));
 
-        //Buttons related to instructor functionality
-        Button createArticle = new Button("Create Article");
-        Button editArticle = new Button("Edit Article");
-        Button viewArticle = new Button("View Article");
-        Button deleteArticle = new Button("Delete Article");
+        // Button actions for article management
+        createArticleButton.setOnAction(e -> showCreateArticlePage(primaryStage));
+        deleteArticleButton.setOnAction(e -> showDeleteArticlePage(primaryStage)); // Only delete articles
 
-        createArticle.setOnAction(e -> {
-            showCreateArticlePage(primaryStage);
-        });
+        // Button actions for group management
+        manageGroupsButton.setOnAction(e -> showGroupManagementPage(primaryStage, false)); // General groups
+        manageSpecialAccessGroupsButton.setOnAction(e -> showGroupManagementPage(primaryStage, true)); // Special access groups
 
-        editArticle.setOnAction(e -> {
-            showlistArticlePage(primaryStage,"edit");;
-        });
+        // Button action for backup and restore
+        backupRestoreButton.setOnAction(e -> showBackupRestorePage(primaryStage));
 
-        viewArticle.setOnAction(e -> {
-            showlistArticlePage(primaryStage,"view");
-        });
+        // Layout for admin functionality
+        VBox adminLayout = new VBox(10, logoutButton, inviteUserButton, deleteUserButton, resetUserButton,
+                listUsersButton, updateUserRolesButton, createArticleButton, deleteArticleButton, manageGroupsButton,
+                manageSpecialAccessGroupsButton, backupRestoreButton);
 
-        deleteArticle.setOnAction(e -> {
-            showdeleteArticlePage(primaryStage);
-        });
-
-
-//        backupData.setOnAction(e -> {
-//            showbackupArticlePage(primaryStage);
-//        });
-//
-//        restoreData.setOnAction(e -> {
-//            showRestoreArticlePage(primaryStage);
-//        });
-
-        // Layout for the Admin Homepage
-        VBox instructorLayout = new VBox(10, createArticle,viewArticle,editArticle,deleteArticle);
-        VBox adminLayout = new VBox(10, logoutButton, inviteUserButton, deleteUserButton, resetUserButton, listUsersButton, updateUserRolesButton);
-        HBox mainAdminLayout = new HBox(10, adminLayout, instructorLayout);
-        Scene adminScene = new Scene(mainAdminLayout, 300, 300);
-
+        Scene adminScene = new Scene(adminLayout, 400, 500);
         primaryStage.setScene(adminScene);
         primaryStage.show();
     }
+
+    private void showDeleteArticlePage(Stage primaryStage) {
+    }
+
 
     // Method to navigate to the invite user page
     private void showInviteUserPage(Stage primaryStage) {
