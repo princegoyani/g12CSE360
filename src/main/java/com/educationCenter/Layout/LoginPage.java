@@ -184,7 +184,6 @@ public class LoginPage extends Application {
         editArticle.setOnAction(e -> showlistArticlePage(primaryStage,"edit"));
         viewArticle.setOnAction(e -> showlistArticlePage(primaryStage,"view"));
         deleteArticle.setOnAction(e -> showdeleteArticlePage(primaryStage));
-        ;
         updateGroupAccess.setOnAction(e -> showSpecialAccessPage(primaryStage));
         updateGroupPermissions.setOnAction(e -> updateGroupPermissions(primaryStage));
         viewMessages.setOnAction(e -> showMessages(primaryStage));
@@ -244,7 +243,9 @@ public class LoginPage extends Application {
         });
 
         viewAdminAccess.setOnAction(e -> {
+            System.out.println("1");
             if(groupField != null) {
+                System.out.println("2");
                 showAcesssPage(primaryStage,null,groupField.getText());
             }
         });
@@ -269,13 +270,16 @@ public class LoginPage extends Application {
 
         Label listUsersLabel = new Label("List of Access for "  + username);
         Button backButton = new Button("Back");
-
+        System.out.println("3");
         ListView<String> ArticleListView = new ListView<>();
         String[] datas;
         if (username != null) {
             datas = ArticleDatabase.returnGroupsFromUser(username);
+            System.out.println("4");
         }
-        else { datas= ArticleDatabase.returnUsersFromGroup(groupName);}
+        else {
+            System.out.println("5");
+            datas= ArticleDatabase.returnUsersFromGroup(groupName);}
 
         if (datas != null) {
             System.out.println(datas);
@@ -929,7 +933,7 @@ public class LoginPage extends Application {
 
         // Layout for the Instructor Homepage
         VBox instructorLayout = new VBox(10, createArticle, viewArticle, editArticle, deleteArticle,
-                backupRestoreButton, viewMessages, logoutButton);
+                backupRestoreButton, updateGroupAccess,updateGroupPermissions, viewMessages, logoutButton);
         Scene instructorScene = new Scene(instructorLayout, 600, 600);
 
         primaryStage.setScene(instructorScene);

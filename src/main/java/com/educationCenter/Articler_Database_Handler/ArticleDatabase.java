@@ -30,8 +30,7 @@ public class ArticleDatabase {
 		App.addToSearchHistory(query + " " + level + " " + group);
 		try {
 			// Fetch all articles from the database
-			String[] groups=  articleDatabaseHelper.returnGroupFromUser(App.getUserId(App.getUsername()));
-			String[][] allArticles = articleDatabaseHelper.returnListArticles(groups);
+			String[][] allArticles = articleDatabaseHelper.returnListArticles();
 
 			for (String[] article : allArticles) {
 				String articleTitle = article[1];
@@ -266,8 +265,7 @@ public class ArticleDatabase {
 		public static String[][] returnListArticles() {
 
 			try {
-				String[] groups = articleDatabaseHelper.returnGroupFromUser(App.getUserId(App.getUsername()));
-                return articleDatabaseHelper.returnListArticles(groups);
+                return articleDatabaseHelper.returnListArticles();
             }catch(Exception e) {
 			System.out.println(e.getMessage());
 			}
@@ -280,7 +278,7 @@ public class ArticleDatabase {
 		public static String[] returnArticle(String id ){
 		try{
 			int key = Integer.parseInt(id);
-			return articleDatabaseHelper.returnArticle(key);
+			return articleDatabaseHelper.returnArticle(App.getUserId(App.getUsername()),key);
 		}catch (Exception e){
 			System.out.println(e.getMessage());
 		}
@@ -406,7 +404,8 @@ public class ArticleDatabase {
 
 	public static boolean isCurrentAdminof(String groupName){
         try {
-            return Arrays.asList(articleDatabaseHelper.getGroupAdmin(groupName)).contains(App.getUserId(App.getUsername()));
+
+            return Arrays.stream(articleDatabaseHelper.getGroupAdmin(groupName)).anyMatch(e -> e == App.getUserId(App.getUsername()));
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -414,7 +413,6 @@ public class ArticleDatabase {
     }
 	public static boolean addGroupToSpecialAccess(String groupName,int userid) {
 		try {
-
 			if (!isCurrentAdminof(groupName) && Arrays.asList(articleDatabaseHelper.returnGroupFromUser(userid)).contains(userid)) {
 				return false;
 			}
@@ -429,9 +427,11 @@ public class ArticleDatabase {
 
 	public static String[] returnUsersFromGroup(String groupName) {
         try {
-			if (!isCurrentAdminof(groupName)) {
+			if (!isCurrentAdminof(groupName) && !App.getActiveRole().equals("admin")) {
+				System.out.println(6);
 				return null;
 			}
+			System.out.println(7);
 			int[] ids = articleDatabaseHelper.getGroupAdmin(groupName);
 
 			String[] admins = new String[ids.length];
