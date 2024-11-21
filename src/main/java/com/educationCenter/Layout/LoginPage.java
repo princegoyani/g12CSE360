@@ -784,7 +784,7 @@ public class LoginPage extends Application {
                     String author = article[2];
                     String abstractText = article[3];
                     String difficulty = article[4];
-                    String summary = "Title: " + title + ", Author: " + author + ", Abstract: " + abstractText;
+                    String summary = article[0]+ " Title: " + title + ", Author: " + author + ", Abstract: " + abstractText;
 
                     // Update counts
                     switch (difficulty.toLowerCase()) {
@@ -812,10 +812,9 @@ public class LoginPage extends Application {
             String selectedArticle = searchResultsListView.getSelectionModel().getSelectedItem();
             if (selectedArticle != null && !selectedArticle.equals("No articles found matching the criteria.")) {
                 // Extract article ID or other identifier from the selected item (assuming the title includes an identifier)
-                String articleID = extractArticleID(selectedArticle);
-                if (articleID != null) {
-                    showFullArticle(primaryStage, articleID);
-                }
+
+                    showViewArticlePage(primaryStage, selectedArticle.split(" ")[0]);
+
             }
         });
 

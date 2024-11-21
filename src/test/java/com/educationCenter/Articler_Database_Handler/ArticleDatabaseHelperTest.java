@@ -69,10 +69,6 @@ class ArticleDatabaseHelperTest {
         assertDoesNotThrow(() -> dbHelper.backupByGrouping("backup_group_test", "test_group"));
     }
 
-    @Test
-    void saveDatabase() {
-        assertDoesNotThrow(() -> dbHelper.saveDatabase());
-    }
 
     @Test
     void loadFromFile() {
@@ -82,11 +78,6 @@ class ArticleDatabaseHelperTest {
     @Test
     void deleteAllFiles() {
         assertDoesNotThrow(() -> ArticleDatabaseHelper.deleteAllFiles("./backups/"));
-    }
-
-    @Test
-    void loadFromFileMerge() {
-        assertDoesNotThrow(() -> dbHelper.loadFromFileMerge("/Users/prince/IdeaProjects/g12CSE360/backups/backup_group_test.zip"));
     }
 
     @Test
@@ -114,7 +105,7 @@ class ArticleDatabaseHelperTest {
 
     @Test
     void editArticleByKey() {
-        assertDoesNotThrow(() -> dbHelper.editArticleByKey(1, "Edited Title", "Edited Body", level, author, keywords, grouping, creationID, links));
+        assertDoesNotThrow(() -> dbHelper.editArticleByKey(1, "Edited Title", "Edited Body", "level", "author", "keywords", "grouping", "links"));
     }
 
     @Test

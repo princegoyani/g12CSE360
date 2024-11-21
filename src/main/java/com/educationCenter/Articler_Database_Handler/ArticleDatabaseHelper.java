@@ -386,7 +386,7 @@ class ArticleDatabaseHelper {
 	}
 	// isDatabaseEmpty() returns a boolean signifying whether the database is empty or not.
 	public boolean isDatabaseEmpty() throws SQLException {
-		String query = "SELECT COUNT(*) AS count FROM cse360articles";
+		String query = "SELECT COUNT(*) AS count FROM articleDatabase";
 		ResultSet resultSet = statement.executeQuery(query);
 		if (resultSet.next()) {
 			return resultSet.getInt("count") == 0;
@@ -1045,7 +1045,7 @@ class ArticleDatabaseHelper {
 		}
 
 		public ArrayList<String> displayAllUniqueGroups() throws Exception{
-			String sql = "SELECT grouping FROM cse360articles";
+			String sql = "SELECT grouping FROM articleDatabase";
 			Statement stmt = connection.createStatement();
 			ResultSet rs = stmt.executeQuery(sql);
 			ArrayList<String> results = new ArrayList<String>();
@@ -1189,7 +1189,7 @@ class ArticleDatabaseHelper {
 
 	// editArticleByKey() EDIT ARTICLE BY KEY (admin + instructor function)
 	public void editArticleByKey(int key, String newTitle, String newBody, String level, String author, String keywords, String grouping, String links) throws Exception {
-		String selectSql = "SELECT title,body FROM cse360articles WHERE id = ?";
+		String selectSql = "SELECT title,body FROM articleDatabase WHERE id = ?";
 		boolean articleFound = false;
 		try (PreparedStatement selectStmt = connection.prepareStatement(selectSql)) {
 			selectStmt.setInt(1, key);
@@ -1197,7 +1197,7 @@ class ArticleDatabaseHelper {
 			if (rs.next()) {
 				articleFound = true;
 				System.out.println("Article found.");
-				String updateSql = "UPDATE cse360articles SET title =? , body = ?, author=?, keywords=?, references=?,difficulty=?, grouping=? WHERE id = ?";
+				String updateSql = "UPDATE articleDatabase SET title =? , body = ?, author=?, keywords=?, references=?,difficulty=?, grouping=? WHERE id = ?";
 
 				String encryptedBody = Base64.getEncoder().encodeToString(
 						encryptionHelper.encrypt(newBody.getBytes(), EncryptionUtils.getInitializationVector("body".toCharArray())) );
