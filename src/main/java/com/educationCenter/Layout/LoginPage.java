@@ -925,66 +925,104 @@ public class LoginPage extends Application {
         }
     }
 
-    private void showViewArticlePage(Stage primaryStage,String articleId) {
-        // create a label and text field for showing article title
+    private void showViewArticlePage(Stage primaryStage, String articleId) {
+        //label and text field
         Label titleLabel = new Label("Title:");
         TextField titleField = new TextField();
         titleField.setEditable(false); //set non-editable
 
-        //create label and text field for article's difficulty level
         Label levelLabel = new Label("Difficulty Level:");
         TextField levelField = new TextField();
         levelField.setEditable(false); //set non-editable
 
-        // create label and text area for article's description
         Label descriptionLabel = new Label("Description:");
         TextArea descriptionArea = new TextArea();
         descriptionArea.setEditable(false); //set non-editable
         descriptionArea.setWrapText(true);
 
-        //create label and text field for keywords
         Label keywordsLabel = new Label("Keywords:");
         TextField keywordsField = new TextField();
         keywordsField.setEditable(false); //set non-editable
 
-        //create label and text area for reference links
+        // label and text field for grouping
+        Label groupingLabel = new Label("Grouping:");
+        TextField groupingField = new TextField();
+        groupingField.setEditable(false); //set non-editable
+
+        //label and text field
+        Label creationIDLabel = new Label("Creation ID:");
+        TextField creationIDField = new TextField();
+        creationIDField.setEditable(false); //set non-editable
+
+        // label and text field
+        Label authorLabel = new Label("Author:");
+        TextField authorField = new TextField();
+        authorField.setEditable(false); //set non-editable
+
+        //label and text area
         Label linksLabel = new Label("Reference Links:");
         TextArea linksArea = new TextArea();
         linksArea.setEditable(false); //set non-editable
         linksArea.setWrapText(true);
 
-        //label and text area for main content of the article
+        // label and text area
         Label contentLabel = new Label("Article Content:");
         TextArea contentArea = new TextArea();
         contentArea.setEditable(false);
         contentArea.setWrapText(true);
 
-        //replace these with actual database calls to load real article data
         String[] data = ArticleDatabase.returnArticle(articleId);
-        titleField.setText(data[2]);
-        descriptionArea.setText(data[3]);
-        levelField.setText(data[4]);
-        keywordsField.setText(data[7]);
-        linksArea.setText(data[8]);
-        contentArea.setText("");
+        if (data != null) {
+            titleField.setText(data[2]);         // Title
+            descriptionArea.setText(data[3]);   // Description/Abstract
+            levelField.setText(mapDifficulty(data[4])); // Difficulty Level
+            authorField.setText(data[5]);       // Author
+            keywordsField.setText(data[6]);     // Keywords
+            groupingField.setText(data[7]);     // Grouping
+            creationIDField.setText(data[1]);   // Creation ID
+            linksArea.setText(data[8]);         // Reference Links
+            contentArea.setText(data[9]);       // Article Content
+        }
+        else {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Article not found!");
+            alert.showAndWait();
+            return;
+        }
 
         // create a Back button
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> start(primaryStage));
-        //layout for arranging UI components vertically with padding and spacing
-        VBox viewArticleLayout = new VBox(10, titleLabel, titleField,
+
+        // layout for arranging UI components vertically with padding and spacing
+        VBox viewArticleLayout = new VBox(10,
+                titleLabel, titleField,
                 levelLabel, levelField,
+                authorLabel, authorField,
                 descriptionLabel, descriptionArea,
                 keywordsLabel, keywordsField,
+                groupingLabel, groupingField,
+                creationIDLabel, creationIDField,
                 linksLabel, linksArea,
                 contentLabel, contentArea,
                 backButton);
-        viewArticleLayout.setPadding(new Insets(10)); //add padding for layout spacing
+        viewArticleLayout.setPadding(new Insets(10)); // add padding for layout spacing
 
-        Scene viewArticleScene = new Scene(viewArticleLayout, 400, 600);
+        Scene viewArticleScene = new Scene(viewArticleLayout, 500, 700);
         primaryStage.setScene(viewArticleScene);
         primaryStage.show(); // Show the scene
     }
+
+    // Helper method to map difficulty level codes to descriptive names
+    private String mapDifficulty(String difficultyCode) {
+        switch (difficultyCode) {
+            case "1": return "Beginner";
+            case "2": return "Intermediate";
+            case "3": return "Advanced";
+            case "4": return "Expert";
+            default: return "Unassigned";
+        }
+    }
+
 
     private void showdeleteArticlePage(Stage primaryStage) {
         Label deleteArticleLabel = new Label("Delete Article Id:");
