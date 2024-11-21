@@ -13,6 +13,7 @@ import javafx.geometry.Insets;
 import javafx.stage.FileChooser;
 import java.io.File;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Objects;
 
 
@@ -175,21 +176,17 @@ public class LoginPage extends Application {
 
         //Buttons related to instructor functionality
         Button createArticle = new Button("Create Article");
-        Button editArticle = new Button("Edit Article");
-        Button viewArticle = new Button("View Article");
 
         Button deleteArticle = new Button("Delete Article");
 
         createArticle.setOnAction(e -> showCreateArticlePage(primaryStage));
-        editArticle.setOnAction(e -> showlistArticlePage(primaryStage,"edit"));
-        viewArticle.setOnAction(e -> showlistArticlePage(primaryStage,"view"));
         deleteArticle.setOnAction(e -> showdeleteArticlePage(primaryStage));
         updateGroupAccess.setOnAction(e -> showSpecialAccessPage(primaryStage));
         updateGroupPermissions.setOnAction(e -> updateGroupPermissions(primaryStage));
         viewMessages.setOnAction(e -> showMessages(primaryStage));
 
         // Layout for the Admin Homepage
-        VBox instructorLayout = new VBox(10, createArticle,viewArticle,editArticle,deleteArticle);
+        VBox instructorLayout = new VBox(10, createArticle,deleteArticle);
         VBox adminLayout = new VBox(10, logoutButton, inviteUserButton, deleteUserButton, resetUserButton, listUsersButton, updateUserRolesButton, updateGroupAccess, updateGroupPermissions,viewMessages);
         HBox mainAdminLayout = new HBox(10, adminLayout, instructorLayout);
         Scene adminScene = new Scene(mainAdminLayout, 600, 600);
@@ -743,12 +740,14 @@ public class LoginPage extends Application {
 
         // Content Level and Group Selection
         ComboBox<String> contentLevelComboBox = new ComboBox<>();
+        //String[] splited = str.split("\\s+");
         contentLevelComboBox.getItems().addAll("Beginner", "Intermediate", "Advanced", "Expert", "All");
         contentLevelComboBox.setValue("All");
 
         // Selecting article group
         ComboBox<String> groupComboBox = new ComboBox<>();
-        groupComboBox.getItems().addAll("Assignment Help", "Exam Preparation", "General Help", "All");
+        ArrayList<String> uniqueGroups = ArticleDatabase.displayAllUniqueGroups();
+        groupComboBox.getItems().addAll(uniqueGroups);
         groupComboBox.setValue("All"); // Default to "All"
 
         // Search keywords or ID
@@ -823,7 +822,8 @@ public class LoginPage extends Application {
         // Manage Groups
         Button listGroupsButton = new Button("List Available Groups");
         listGroupsButton.setOnAction(e -> {
-            String[] groups = ArticleDatabase.listGroups(); // Replace with your actual method to fetch groups
+            ArrayList<String> groups = ArticleDatabase.displayAllUniqueGroups();
+            //String[] groups = ArticleDatabase.listGroups(); // Replace with your actual method to fetch groups
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Available Groups");
             alert.setHeaderText("List of Groups");

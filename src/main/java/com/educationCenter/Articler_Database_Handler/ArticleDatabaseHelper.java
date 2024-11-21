@@ -11,7 +11,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 
-import org.bouncycastle.jcajce.provider.asymmetric.rsa.ISOSignatureSpi;
 import org.h2.tools.Backup;
 import org.h2.tools.Restore;
 //import Encryption.EncryptionHelper;
@@ -44,7 +43,7 @@ import com.educationCenter.Encryption.EncryptionHelper; import com.educationCent
 	 */
 class ArticleDatabaseHelper {
 	static final String JDBC_DRIVER = "org.h2.Driver";   
-	static final String DB_NAME = "Test2003";
+	static final String DB_NAME = "articleDatabase";
 	//static final String DB_URL = "jdbc:h2:~/articleDB/" + DB_NAME;
 	//static final String DB_URL = "jdbc:h2:~/" + DB_NAME;
 	static final String DB_URL = "jdbc:h2:file:./database/" + DB_NAME;
@@ -99,7 +98,7 @@ class ArticleDatabaseHelper {
 	}
 	// createTables() creates the database correct form for article data.
 	private void articleCreateTables() throws SQLException {
-		String userTable = "CREATE TABLE IF NOT EXISTS cse360articles ("
+		String userTable = "CREATE TABLE IF NOT EXISTS articleDatabase ("
 				+ "id LONG AUTO_INCREMENT UNIQUE PRIMARY KEY, " + "creationID LONG, " // unique article ID thru backups
 				+ "title VARCHAR(255), " + "body VARCHAR(255), "
 				+ "author VARCHAR(255), " + "abstrac VARCHAR(255), " + "keywords VARCHAR(255) DEFAULT '0', "
@@ -224,7 +223,7 @@ class ArticleDatabaseHelper {
 			System.out.println("No groupings provided.");
 			return;
 		}
-		String sql = "SELECT * FROM cse360articles";
+		String sql = "SELECT * FROM articleDatabase";
 		Statement stmt = connection.createStatement();
 		ResultSet rs = stmt.executeQuery(sql);
 
@@ -260,7 +259,7 @@ class ArticleDatabaseHelper {
 		System.out.println("Resetting current articles to empty before loading backup...");
 
 		// Empty current database
-		String sqlDeleteAll = "DELETE FROM cse360articles";
+		String sqlDeleteAll = "DELETE FROM articleDatabase";
 		try (Statement stmt = connection.createStatement()) {
 			stmt.executeUpdate(sqlDeleteAll);
 			System.out.println("Current database cleared.");
@@ -340,7 +339,7 @@ class ArticleDatabaseHelper {
 		try {
 			Class.forName("org.h2.Driver");
 			backupConnection = DriverManager.getConnection(tempDbPath, USER, PASS);
-			String sql = "SELECT * FROM cse360articles";
+			String sql = "SELECT * FROM articleDatabase";
 
 			try (Statement stmt = backupConnection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
 				// Iterate through backup articles
@@ -359,7 +358,7 @@ class ArticleDatabaseHelper {
 					String nonSensKey = rs.getString("nonSensKey");
 
 					// Check if the article already exists in the current database
-					String checkSql = "SELECT COUNT(*) FROM cse360articles WHERE creationID = ?";
+					String checkSql = "SELECT COUNT(*) FROM articleDatabase WHERE creationID = ?";
 					try (PreparedStatement checkStmt = connection.prepareStatement(checkSql)) {
 						checkStmt.setLong(1, creationID);
 						ResultSet countResult = checkStmt.executeQuery();
@@ -387,7 +386,7 @@ class ArticleDatabaseHelper {
 	}
 	// isDatabaseEmpty() returns a boolean signifying whether the database is empty or not.
 	public boolean isDatabaseEmpty() throws SQLException {
-		String query = "SELECT COUNT(*) AS count FROM cse360articles"; ResultSet resultSet = statement.executeQuery(query);
+		String query = "SELECT COUNT(*) AS count FROM articleDatabase"; ResultSet resultSet = statement.executeQuery(query);
 		if (resultSet.next()) { return resultSet.getInt("count") == 0; } else return true;
 	}
 
@@ -420,7 +419,7 @@ class ArticleDatabaseHelper {
 		String encryptedReferences = Base64.getEncoder().encodeToString(
 				encryptionHelper.encrypt(references.getBytes(), EncryptionUtils.getInitializationVector("references".toCharArray())) );
 		// This now encrypted data is entered into the database as a new article.
-		String insertUser = "INSERT INTO cse360articles (title, body, author, abstrac, keywords, references,difficulty, grouping) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+		String insertUser = "INSERT INTO articleDatabase (title, body, author, abstrac, keywords, references,difficulty, grouping) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 		try (PreparedStatement pstmt = connection.prepareStatement(insertUser, Statement.RETURN_GENERATED_KEYS)) {
 			pstmt.setString(1, encryptedTitle); pstmt.setString(2, encryptedBody);
 			pstmt.setString(3, encryptedAuthor); pstmt.setString(4, encryptedAbstrac);
@@ -441,7 +440,7 @@ class ArticleDatabaseHelper {
 					long uniqueId = (hashValue & 0xFFFFFFFFL) + autoIncrementedId; // Combine them
 
 					// Update creationID for new article
-					String updateCreationID = "UPDATE cse360articles SET creationID = ? WHERE id = ?";
+					String updateCreationID = "UPDATE articleDatabase SET creationID = ? WHERE id = ?";
 					try (PreparedStatement updateStmt = connection.prepareStatement(updateCreationID)) {
 						updateStmt.setLong(1, uniqueId); updateStmt.setLong(2, autoIncrementedId);
 						updateStmt.executeUpdate();
@@ -452,7 +451,7 @@ class ArticleDatabaseHelper {
 	}
 		public void createMergedArticle(String title, String body, String author, String abstrac, String keywords, String references, String difficulty, String grouping, String nonSensTitle, String nonSensAbstrac, String nonSensKey) throws Exception {
 			// This method assumes the data passed is already encrypted where necessary.
-			String insertUser = "INSERT INTO cse360articles (title, body, author, abstrac, keywords, references, difficulty, grouping, nonSensTitle, nonSensAbstrac, nonSensKey) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			String insertUser = "INSERT INTO articleDatabase (title, body, author, abstrac, keywords, references, difficulty, grouping, nonSensTitle, nonSensAbstrac, nonSensKey) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 			try (PreparedStatement pstmt = connection.prepareStatement(insertUser, Statement.RETURN_GENERATED_KEYS)) {
 				pstmt.setString(1, title); //
 				pstmt.setString(2, body);  //
@@ -478,7 +477,7 @@ class ArticleDatabaseHelper {
 						long hashValue = DB_NAME.hashCode();
 						long uniqueId = (hashValue & 0xFFFFFFFFL) + autoIncrementedId;
 						// Update creationID field for new article
-						String updateCreationID = "UPDATE cse360articles SET creationID = ? WHERE id = ?";
+						String updateCreationID = "UPDATE articleDatabase SET creationID = ? WHERE id = ?";
 						try (PreparedStatement updateStmt = connection.prepareStatement(updateCreationID)) {
 							updateStmt.setLong(1, uniqueId);
 							updateStmt.setLong(2, autoIncrementedId);
@@ -524,7 +523,7 @@ class ArticleDatabaseHelper {
 		String encryptedNonSensAbstrac = Base64.getEncoder().encodeToString(
 				encryptionHelper.encrypt(nonSensAbstrac.getBytes(), EncryptionUtils.getInitializationVector("nonsensabstrac".toCharArray())));
 		// This now encrypted data is entered into the database as a new article.
-		String insertUser = "INSERT INTO cse360articles (title, body, author, abstrac, keywords, references, difficulty, grouping, nonSensTitle, nonSensAbstrac, nonSensKey) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		String insertUser = "INSERT INTO articleDatabase (title, body, author, abstrac, keywords, references, difficulty, grouping, nonSensTitle, nonSensAbstrac, nonSensKey) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try (PreparedStatement pstmt = connection.prepareStatement(insertUser, Statement.RETURN_GENERATED_KEYS)) {
 			pstmt.setString(1, encryptedTitle); pstmt.setString(2, encryptedBody);
 			pstmt.setString(3, encryptedAuthor); pstmt.setString(4, encryptedAbstrac);
@@ -548,7 +547,7 @@ class ArticleDatabaseHelper {
 					long hashValue = DB_NAME.hashCode();
 					long uniqueId = (hashValue & 0xFFFFFFFFL) + autoIncrementedId;
 					// Update creationID field new article
-					String updateCreationID = "UPDATE cse360articles SET creationID = ? WHERE id = ?";
+					String updateCreationID = "UPDATE articleDatabase SET creationID = ? WHERE id = ?";
 					try (PreparedStatement updateStmt = connection.prepareStatement(updateCreationID)) {
 						updateStmt.setLong(1, uniqueId); updateStmt.setLong(2, autoIncrementedId);
 						updateStmt.executeUpdate(); }
@@ -559,7 +558,7 @@ class ArticleDatabaseHelper {
 	// displayArticles() displays entire article set.
 	public void displayArticles() throws Exception{
 		if (isDatabaseEmpty() == true) { System.out.println("There are no articles in the database."); return; }
-		String sql = "SELECT * FROM cse360articles";
+		String sql = "SELECT * FROM articleDatabase";
 		Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
 		while(rs.next()) {
 			int id  = rs.getInt("id");
@@ -628,7 +627,7 @@ class ArticleDatabaseHelper {
 
 	public String[][] returnListArticles() throws Exception{
 			if (isDatabaseEmpty() == true) { System.out.println("There are no articles in the database."); return null; }
-			String sql = "SELECT * FROM cse360articles";
+			String sql = "SELECT * FROM articleDatabase";
 			Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
 			List<String[]> ArticleList = new ArrayList<>();
 
@@ -723,7 +722,7 @@ class ArticleDatabaseHelper {
 
 		public String[][] returnListArticles(String group) throws Exception{
 			if (isDatabaseEmpty() == true) { System.out.println("There are no articles in the database."); return null; }
-			String sql = "SELECT * FROM cse360articles";
+			String sql = "SELECT * FROM articleDatabase";
 			Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
 			List<String[]> ArticleList = new ArrayList<>();
 
@@ -816,7 +815,7 @@ class ArticleDatabaseHelper {
 		}
 	// displayArticleByKey() takes an article's sequence number to display the full article data.
 	public void displayArticleByKey(int key) throws Exception{
-		String sql = "SELECT * FROM cse360articles";
+		String sql = "SELECT * FROM articleDatabase";
 		Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
 		Boolean articleFound = false;
 		while( rs.next() ) {
@@ -896,7 +895,7 @@ class ArticleDatabaseHelper {
 
 	//
 	public String[] returnArticle(int userId, int key) throws Exception{
-			String sql = "SELECT * FROM cse360articles";
+			String sql = "SELECT * FROM articleDatabase";
 			Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
 			Boolean articleFound = false;
 			while( rs.next() ) {
@@ -994,7 +993,7 @@ class ArticleDatabaseHelper {
 		}
 	//
 	public String[] returnArticlesInGroup(String GroupName){
-		String sql = "SELECT id FROM cse360articles WHERE grouping=?";
+		String sql = "SELECT id FROM articleDatabase WHERE grouping=?";
 
 		try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
 			preparedStatement.setString(1, GroupName);
@@ -1041,9 +1040,38 @@ class ArticleDatabaseHelper {
 			}
 		}
 
+		public ArrayList<String> displayAllUniqueGroups() throws Exception{
+			String sql = "SELECT grouping FROM articleDatabase";
+			Statement stmt = connection.createStatement();
+			ResultSet rs = stmt.executeQuery(sql);
+			ArrayList<String> results = new ArrayList<String>();
+
+			while(rs.next()){
+				results.addAll(List.of(rs.getString("grouping").split("\\s+")));
+			}
+
+			// Create a new LinkedHashSet
+			Set<String> set = new LinkedHashSet<>();
+
+			// Add the elements to set
+			set.addAll(results);
+
+			// Clear the list
+			results.clear();
+
+			// add the elements of set
+			// with no duplicates to the list
+			results.addAll(set);
+
+			// return the list
+			System.out.println("Unique Groups: " + (results));
+			return results;
+
+		}
         public void displayArticlesByGrouping(String grouping) throws Exception {
-		String sql = "SELECT * FROM cse360articles";
-		Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
+		String sql = "SELECT * FROM articleDatabase";
+		Statement stmt = connection.createStatement();
+		ResultSet rs = stmt.executeQuery(sql);
 		// User Input Of Groups Into Individual Groups
 		String[] parsedGroups = grouping.split("\\s+");
 		// Go Through Each Article And Check, If It Matches All Groups, Display
@@ -1051,7 +1079,7 @@ class ArticleDatabaseHelper {
 			int id  = rs.getInt("id");
 			String articleGroupings = rs.getString("grouping");
 			boolean allPresent = true;
-
+			//array = Arrays.stream(array).distinct().toArray(String[]::new);
 			// For Each Article Entry, Check If Each Parsed Group Is Found
 			for (String userString : parsedGroups) {
 				//System.out.printf("if articleGrouping contains %s \n", userString);
@@ -1072,7 +1100,7 @@ class ArticleDatabaseHelper {
 	}
 		// MODIFIED COPY OF DISP BY GROUPINGS
 		public void displayArticlesByKeywords(String grouping) throws Exception {
-			String sql = "SELECT * FROM cse360articles";
+			String sql = "SELECT * FROM articleDatabase";
 			Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
 			// User Input Of Groups Into Individual Groups
 			String[] parsedGroups = grouping.split("\\s+");
@@ -1112,7 +1140,7 @@ class ArticleDatabaseHelper {
 	//
 	// disparticlebykey
 	public int checkArticleByKey(int key) throws Exception{
-		String sql = "SELECT * FROM cse360articles";
+		String sql = "SELECT * FROM articleDatabase";
 		Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
 		int articleFound = 0;
 		while( rs.next() ) {
@@ -1127,7 +1155,7 @@ class ArticleDatabaseHelper {
 
 
 	public int checkSensByKey(int key) throws Exception{
-		String sql = "SELECT * FROM cse360articles";
+		String sql = "SELECT * FROM articleDatabase";
 		Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql);
 		int articleFound = 0;
 		while( rs.next() ) {
@@ -1149,7 +1177,7 @@ class ArticleDatabaseHelper {
 	//
 	// deleteArticleByKey() takes article's sequence number to locate article and perform deletion.
 	public void deleteArticleByKey(int key) throws Exception{
-		String sql = "SELECT * FROM cse360articles"; String sqlDel = "DELETE FROM cse360articles WHERE id = ?";
+		String sql = "SELECT * FROM articleDatabase"; String sqlDel = "DELETE FROM articleDatabase WHERE id = ?";
 		Statement stmt = connection.createStatement(); PreparedStatement stmtDel = connection.prepareStatement(sqlDel);
 		ResultSet rs = stmt.executeQuery(sql);
 		stmtDel.setInt(1, key); stmtDel.executeUpdate(); System.out.println("Article deleted.");
@@ -1157,14 +1185,14 @@ class ArticleDatabaseHelper {
 
 	// editArticleByKey() EDIT ARTICLE BY KEY (admin + instructor function)
 	public void editArticleByKey(int key, String newTitle, String newBody) throws Exception {
-		String selectSql = "SELECT title,body FROM cse360articles WHERE id = ?";
+		String selectSql = "SELECT title,body FROM articleDatabase WHERE id = ?";
 		boolean articleFound = false;
 		try (PreparedStatement selectStmt = connection.prepareStatement(selectSql)) {
 			selectStmt.setInt(1, key);
 			ResultSet rs = selectStmt.executeQuery();
 			if (rs.next()) {
 				articleFound = true;
-				String updateSql = "UPDATE cse360articles SET title = ?, body = ? WHERE id = ?";
+				String updateSql = "UPDATE articleDatabase SET title = ?, body = ? WHERE id = ?";
 
 				String encryptedBody = Base64.getEncoder().encodeToString(
 						encryptionHelper.encrypt(newBody.getBytes(), EncryptionUtils.getInitializationVector("body".toCharArray())) );
@@ -1192,14 +1220,14 @@ class ArticleDatabaseHelper {
 	}
 		// editArticleByKey() EDIT ARTICLE BY KEY (admin + instructor function)
 	public void editArticleByKeySens(int key, String newTitle, String newBody, String newAuthor, String newAbstrac, String newKeywords, String newReferences,  String newDifficulty, String newGrouping, String newSensKey, String newSensTitle, String newSensAbstrac) throws Exception {
-		String selectSql = "SELECT * FROM cse360articles WHERE id = ?";
+		String selectSql = "SELECT * FROM articleDatabase WHERE id = ?";
 		boolean articleFound = false;
 		try (PreparedStatement selectStmt = connection.prepareStatement(selectSql)) {
 			selectStmt.setInt(1, key);
 			ResultSet rs = selectStmt.executeQuery();
 			if (rs.next()) {
 				articleFound = true;
-				String updateSql = "UPDATE cse360articles SET title = ?, body = ?, author = ?, abstrac = ?, keywords = ?, references = ?, difficulty = ?, grouping = ?, nonSensKey = ?, nonSensTitle = ?, nonSensAbstrac = ? WHERE id = ?";
+				String updateSql = "UPDATE articleDatabase SET title = ?, body = ?, author = ?, abstrac = ?, keywords = ?, references = ?, difficulty = ?, grouping = ?, nonSensKey = ?, nonSensTitle = ?, nonSensAbstrac = ? WHERE id = ?";
 
 				String encryptedBody = Base64.getEncoder().encodeToString(
 						encryptionHelper.encrypt(newBody.getBytes(), EncryptionUtils.getInitializationVector("body".toCharArray())) );
@@ -1246,7 +1274,7 @@ class ArticleDatabaseHelper {
 /*
 	public void updateArticleByKey(int key, String newTitle, String newBody, String newAuthor, String newAbstract, String newKeywords, String newGrouping) throws Exception {
 		// First, check if the article exists
-		String selectSql = "SELECT * FROM cse360articles WHERE id = ?";
+		String selectSql = "SELECT * FROM articleDatabase WHERE id = ?";
 		boolean articleFound = false;
 
 		try (PreparedStatement selectStmt = connection.prepareStatement(selectSql)) {
@@ -1257,7 +1285,7 @@ class ArticleDatabaseHelper {
 				articleFound = true;
 
 				// Prepare the SQL update statement
-				String updateSql = "UPDATE cse360articles SET title = ?, body = ?, author = ?, abstrac = ?, keywords = ?, grouping = ? WHERE id = ?";
+				String updateSql = "UPDATE articleDatabase SET title = ?, body = ?, author = ?, abstrac = ?, keywords = ?, grouping = ? WHERE id = ?";
 
 				try (PreparedStatement pstmt = connection.prepareStatement(updateSql)) {
 					// Set the parameters for the prepared statement

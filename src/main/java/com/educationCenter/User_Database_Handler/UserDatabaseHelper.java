@@ -15,7 +15,8 @@ public class UserDatabaseHelper {
 
 	// JDBC driver name and database URL 
 	static final String JDBC_DRIVER = "org.h2.Driver";
-	static final String DB_URL = "jdbc:h2:~/databaseTrial19";
+	static final String DB_NAME = "userDatabase";
+	static final String DB_URL = "jdbc:h2:file:./database/" + DB_NAME;
 	//  Database credentials 
 	static final String USER = "sa";
 	static final String PASS = "";

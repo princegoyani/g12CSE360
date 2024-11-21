@@ -33,20 +33,23 @@ public class ArticleDatabase {
 			String[][] allArticles = articleDatabaseHelper.returnListArticles();
 
 			for (String[] article : allArticles) {
+				String articleID = article[0];
 				String articleTitle = article[1];
 				String articleAuthor = article[2];
 				String articleAbstract = article[3];
 				String articleLevel = article[4];
-				String articleGroup = article[5]; // Assuming article[5] represents the group
+				String articleGroup = article[8]; // Assuming article[5] represents the group
 
 				// Check if the article matches the search criteria
 				boolean matchesQuery = query.isEmpty() ||
 						articleTitle.contains(query) ||
 						articleAuthor.contains(query) ||
-						articleAbstract.contains(query);
+						articleAbstract.contains(query) ||
+						articleID.contains(query);
 
 				boolean matchesLevel = level.equals("All") || articleLevel.equalsIgnoreCase(level);
-				boolean matchesGroup = group.equals("All") || articleGroup.equalsIgnoreCase(group);
+				boolean matchesGroup = group.equals("All") ||  Arrays.asList(articleGroup.split("\\s+")).contains(group);
+				System.out.println("Article group: " + articleGroup);
 
 				// If the article matches all criteria, add it to results
 				if (matchesQuery && matchesLevel && matchesGroup) {
@@ -307,6 +310,13 @@ public class ArticleDatabase {
 			try {
 				articleDatabaseHelper.editArticleByKey(editKey, editTitle, editBody);
 			}catch (Exception e) {System.out.println(e);}
+		}
+		public static ArrayList<String> displayAllUniqueGroups(){
+			ArrayList<String>  uniqueGroups = null;
+		try {
+				uniqueGroups = articleDatabaseHelper.displayAllUniqueGroups();
+			} catch (Exception e) {System.out.println(e);}
+			return uniqueGroups;
 		}
 //		public static void callEditArticle(String key, String editTitle, String editBody, String editAuthor, String editAbstrac, String editKeywords, String editReferences, String editDifficulty, String editGrouping) throws Exception {
 //			int editKey = Integer.parseInt(key);
