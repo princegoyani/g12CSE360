@@ -1405,6 +1405,7 @@ public class LoginPage extends Application {
             }
         });
 
+
         removeSpecialAccessButton.setOnAction(e -> {
             String groupName = groupNameField.getText().trim();
             if (groupName.isEmpty()) {
