@@ -288,11 +288,11 @@ class ArticleDatabaseHelper {
 	//
 	private String extractBackup(String zipFilePath) throws IOException {
 		String tempDir = Paths.get("").toAbsolutePath() + "/backups/extracted";
-		deleteAllFiles(tempDir);
 		File dir = new File(tempDir);
 		if (!dir.exists()) {
 			dir.mkdirs(); // Create directory if it does not exist
 		}
+		deleteAllFiles(dir.getAbsolutePath());
 		//deleteAllFiles(tempDir);
 
 		try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(Paths.get(zipFilePath)))) {
@@ -387,8 +387,12 @@ class ArticleDatabaseHelper {
 	}
 	// isDatabaseEmpty() returns a boolean signifying whether the database is empty or not.
 	public boolean isDatabaseEmpty() throws SQLException {
-		String query = "SELECT COUNT(*) AS count FROM cse360articles"; ResultSet resultSet = statement.executeQuery(query);
-		if (resultSet.next()) { return resultSet.getInt("count") == 0; } else return true;
+		String query = "SELECT COUNT(*) AS count FROM cse360articles";
+		ResultSet resultSet = statement.executeQuery(query);
+		if (resultSet.next()) {
+			return resultSet.getInt("count") == 0;
+		}
+		return true;
 	}
 
 	// createArticle - not sensitive - sensitive fields blank
@@ -986,7 +990,7 @@ class ArticleDatabaseHelper {
 
 					String references = new String(decryptedReferences);
 
-					String[] data =  {idS, creationId, title, body, difficulty, author, abstrac, keywords, references };
+					String[] data =  {idS, creationId, title, body, difficulty, author, abstrac, keywords, references,grouping };
 					return data;
 				}
 			} if (articleFound == false) System.out.println("No article was found with that ID.");

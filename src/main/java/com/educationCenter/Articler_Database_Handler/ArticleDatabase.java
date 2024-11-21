@@ -37,7 +37,8 @@ public class ArticleDatabase {
 				String articleAuthor = article[2];
 				String articleAbstract = article[3];
 				String articleLevel = article[4];
-				String articleGroup = article[5]; // Assuming article[5] represents the group
+
+				String articleGroup = article[8]; // Assuming article[5] represents the group
 
 				// Check if the article matches the search criteria
 				boolean matchesQuery = query.isEmpty() ||

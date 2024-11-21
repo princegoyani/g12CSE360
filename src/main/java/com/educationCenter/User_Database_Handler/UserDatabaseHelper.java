@@ -298,8 +298,8 @@ public class UserDatabaseHelper {
 			pstmt.setString(3, email);   // New role
 	        
 	        //add check data statement
-	        int rs = pstmt.executeUpdate();
-	        return true;
+	        return pstmt.executeUpdate() == 0;
+
 		}
 
 	}
