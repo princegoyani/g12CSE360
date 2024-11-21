@@ -303,10 +303,10 @@ public class ArticleDatabase {
 		public static void callCreateArticle(String newTitle, String newBody, String newAuthor, String newAbstrac, String newKeywords, String newReferences, String newDifficulty, String newGrouping, String nonSensTitle, String nonSensAbstrac, String sensKey) throws Exception {
 			articleDatabaseHelper.createArticle(newTitle, newBody, newAuthor, newAbstrac, newKeywords, newReferences, newDifficulty, newGrouping, nonSensTitle, nonSensAbstrac, sensKey);
 		}  // Create Sensitive Article
-		public static void callEditArticle(String key, String editTitle, String editBody){
+		public static void callEditArticle(String key, String editTitle, String editBody, String level, String author, String keywords, String grouping, String links){
 			int editKey = Integer.parseInt(key);
 			try {
-				articleDatabaseHelper.editArticleByKey(editKey, editTitle, editBody);
+				articleDatabaseHelper.editArticleByKey(editKey, editTitle, editBody,level,author,keywords,grouping,links);
 			}catch (Exception e) {System.out.println(e);}
 		}
 //		public static void callEditArticle(String key, String editTitle, String editBody, String editAuthor, String editAbstrac, String editKeywords, String editReferences, String editDifficulty, String editGrouping) throws Exception {

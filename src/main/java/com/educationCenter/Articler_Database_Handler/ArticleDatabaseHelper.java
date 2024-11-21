@@ -11,7 +11,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 
-import org.bouncycastle.jcajce.provider.asymmetric.rsa.ISOSignatureSpi;
 import org.h2.tools.Backup;
 import org.h2.tools.Restore;
 //import Encryption.EncryptionHelper;
@@ -1160,7 +1159,7 @@ class ArticleDatabaseHelper {
 	}
 
 	// editArticleByKey() EDIT ARTICLE BY KEY (admin + instructor function)
-	public void editArticleByKey(int key, String newTitle, String newBody) throws Exception {
+	public void editArticleByKey(int key, String newTitle, String newBody, String level, String author, String keywords, String grouping, String links) throws Exception {
 		String selectSql = "SELECT title,body FROM cse360articles WHERE id = ?";
 		boolean articleFound = false;
 		try (PreparedStatement selectStmt = connection.prepareStatement(selectSql)) {
@@ -1168,23 +1167,51 @@ class ArticleDatabaseHelper {
 			ResultSet rs = selectStmt.executeQuery();
 			if (rs.next()) {
 				articleFound = true;
-				String updateSql = "UPDATE cse360articles SET title = ?, body = ? WHERE id = ?";
+				System.out.println("Article found.");
+				String updateSql = "UPDATE cse360articles SET title =? , body = ?, author=?, keywords=?, references=?,difficulty=?, grouping=? WHERE id = ?";
 
 				String encryptedBody = Base64.getEncoder().encodeToString(
 						encryptionHelper.encrypt(newBody.getBytes(), EncryptionUtils.getInitializationVector("body".toCharArray())) );
 				String encryptedTitle = Base64.getEncoder().encodeToString(
 						encryptionHelper.encrypt(newTitle.getBytes(), EncryptionUtils.getInitializationVector("title".toCharArray())) );
 
-				try (PreparedStatement pstmt = connection.prepareStatement(updateSql)) {
+				String encryptedAuthor = Base64.getEncoder().encodeToString(
+						encryptionHelper.encrypt(author.getBytes(), EncryptionUtils.getInitializationVector("author".toCharArray())) );
+				String encryptedKeywords = Base64.getEncoder().encodeToString(
+						encryptionHelper.encrypt(keywords.getBytes(), EncryptionUtils.getInitializationVector("keywords".toCharArray())) );
+				String encryptedReferences = Base64.getEncoder().encodeToString(
+						encryptionHelper.encrypt(links.getBytes(), EncryptionUtils.getInitializationVector("references".toCharArray())) );
+
+				int difficultyLevel;
+				if ("Beginner".equals(level)) {
+					difficultyLevel = 1;
+				} else if ("Intermediate".equals(level)) {
+					difficultyLevel = 2;
+				} else if ("Advanced".equals(level)) {
+					difficultyLevel = 3;
+				} else if ("Expert".equals(level)) {
+					difficultyLevel = 4;
+				} else {
+					difficultyLevel = 0; // Undefined or invalid difficulty
+				}
+
+
+				PreparedStatement pstmt = connection.prepareStatement(updateSql);
+
 					pstmt.setString(1, encryptedTitle);
 					pstmt.setString(2, encryptedBody);
-					pstmt.setInt(3, key); // Article ID
+					pstmt.setString(3, encryptedAuthor);
+					pstmt.setString(4, encryptedKeywords);
+					pstmt.setString(5, encryptedReferences);
+					pstmt.setInt(6, difficultyLevel);
+					pstmt.setString(7, grouping);
+
+					pstmt.setInt(8, key); // Article ID
 					int rowsAffected = pstmt.executeUpdate();
 					if (rowsAffected > 0) {
 						System.out.println("Article with ID " + key + " has been updated successfully.");
 					} else {
 						System.out.println("No article was updated.");
-					}
 				}
 			} else {
 				System.out.println("No article found with ID " + key + ".");

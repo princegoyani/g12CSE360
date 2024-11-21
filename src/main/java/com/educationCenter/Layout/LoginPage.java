@@ -1106,10 +1106,6 @@ public class LoginPage extends Application {
         linksArea.setWrapText(true);
 
         // label and text area
-        Label contentLabel = new Label("Article Content:");
-        TextArea contentArea = new TextArea();
-        contentArea.setEditable(false);
-        contentArea.setWrapText(true);
 
         String[] data = ArticleDatabase.returnArticle(articleId);
         if (data != null) {
@@ -1143,7 +1139,6 @@ public class LoginPage extends Application {
                 groupingLabel, groupingField,
                 creationIDLabel, creationIDField,
                 linksLabel, linksArea,
-                contentLabel, contentArea,
                 backButton);
         viewArticleLayout.setPadding(new Insets(10)); // add padding for layout spacing
 
@@ -1193,32 +1188,80 @@ public class LoginPage extends Application {
     private void showEditArticlePage(Stage primaryStage,String EditId) {
 
         Label editArticleLabel = new Label("Edit Article");
-
-        // article title and content
+        Label titleLabel = new Label("Title:");
         TextField titleField = new TextField();
-        titleField.setPromptText("Enter Article Title");
-        TextArea contentArea = new TextArea();
-        contentArea.setPromptText("Edit Article Content");
-        contentArea.setWrapText(true);
+
+        Label levelLabel = new Label("Difficulty Level:");
+        TextField levelField = new TextField();
+
+
+        Label descriptionLabel = new Label("Description:");
+        TextArea descriptionArea = new TextArea();
+
+        descriptionArea.setWrapText(true);
+
+        Label keywordsLabel = new Label("Keywords:");
+        TextField keywordsField = new TextField();
+
+
+        // label and text field for grouping
+        Label groupingLabel = new Label("Grouping:");
+        TextField groupingField = new TextField();
+
+
+        //label and text field
+        Label creationIDLabel = new Label("Creation ID:");
+        TextField creationIDField = new TextField();
+
+
+        // label and text field
+        Label authorLabel = new Label("Author:");
+        TextField authorField = new TextField();
+
+
+        //label and text area
+        Label linksLabel = new Label("Reference Links:");
+        TextArea linksArea = new TextArea();
+        linksArea.setWrapText(true);
+
 
         // button to load the existing article by ID
         String[] data = ArticleDatabase.returnArticle(EditId);
-        titleField.setText(data[2]);
-        contentArea.setText(data[3]);
+        if (data != null) {
+            titleField.setText(data[2]);         // Title
+            descriptionArea.setText(data[3]);   // Description/Abstract
+            levelField.setText(mapDifficulty(data[4])); // Difficulty Level
+            authorField.setText(data[5]);       // Author
+            keywordsField.setText(data[7]);     // Keywords
+            groupingField.setText(data[9]);     // Grouping
+            creationIDField.setText(data[0]);   // Creation ID
+            linksArea.setText(data[8]);         // Reference Links
 
+        }
+        else {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Article not found!");
+            alert.showAndWait();
+            return;
+        }
         //button to save edits
         Button saveButton = new Button("Save Changes");
         saveButton.setOnAction(e -> {
             String articleId = EditId;
             String title = titleField.getText();
-            String content = contentArea.getText();
+            String body = descriptionArea.getText();
+            String level = levelField.getText();
+            String author = authorField.getText();
+            String keywords = keywordsField.getText();
+            String grouping = groupingField.getText();
+            String links = linksArea.getText();
+
 
             // fields are not empty checker
-            if (articleId.isEmpty() || title.isEmpty() || content.isEmpty()) {
+            if (articleId.isEmpty() || title.isEmpty() ) {
                 System.out.println("Please fill in all fields before saving.");
             } else {
                 // Logic to update the article in the database
-                ArticleDatabase.callEditArticle(articleId, title, content);
+                ArticleDatabase.callEditArticle(articleId, title, body,level,author,keywords,grouping,links);
                 System.out.println("Article with ID " + articleId + " updated successfully.");
             }
         });
@@ -1227,10 +1270,19 @@ public class LoginPage extends Application {
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> start(primaryStage));
         // layout
-        VBox editArticleLayout = new VBox(10, editArticleLabel, titleField, contentArea, saveButton, backButton);
+        VBox editArticleLayout = new VBox(10,
+                titleLabel, titleField,
+                levelLabel, levelField,
+                authorLabel, authorField,
+                descriptionLabel, descriptionArea,
+                keywordsLabel, keywordsField,
+                groupingLabel, groupingField,
+                creationIDLabel, creationIDField,
+                linksLabel, linksArea,
+                backButton,saveButton);
         editArticleLayout.setPadding(new Insets(10)); // Add padding around the layout
         //scene and display
-        Scene editArticleScene = new Scene(editArticleLayout, 400, 400);
+        Scene editArticleScene = new Scene(editArticleLayout, 800, 800);
         primaryStage.setScene(editArticleScene);
         primaryStage.show();
     }
